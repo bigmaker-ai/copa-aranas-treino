@@ -6,6 +6,7 @@
   const PAINEL = !!window.__DEMO_PAINEL;
   // a raiz do site (onde está o demo.js): o painel monta foto/escudo como <servidor> + /logos/… → o "servidor" é o site
   const RAIZ = (document.currentScript && document.currentScript.src || location.href).replace(/\/demo\.js.*$/, '');
+  window.__DEMO_RAIZ = RAIZ;
   try { localStorage.setItem('aranas.serverBase', RAIZ); } catch (e) { /* */ }
   // no painel os caminhos são absolutos (/logos/x.png), no app relativos (logos/x.png)
   const ABS = /^(logos|sponsors-arte|sponsors|marca|competition|mascote|ui|app-icon)\//;

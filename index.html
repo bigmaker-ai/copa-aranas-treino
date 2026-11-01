@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<script src="demo-dados.js"></script>
-<script src="demo.js"></script>
+<script src="demo-dados.js?v=mvx8pdye"></script>
+<script src="demo.js?v=mvx8pdye"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="theme-color" content="#0c1512" />
@@ -1454,7 +1454,7 @@
   }
   $('escGear').onclick = () => {
     const f = $('escFrame');
-    if (!f.src) f.src = 'painel/?only=escalacao';
+    if (!f.src) f.src = 'painel/?only=escalacao&v=mvx8pdye';
     $('escSheet').style.display = 'flex';
   };
   $('escSheetClose').onclick = async () => { $('escSheet').style.display = 'none'; await loadState(); paintEsc(); };
