@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<script src="demo-dados.js?v=mvxu3jdf"></script>
-<script src="demo.js?v=mvxu3jdf"></script>
+<script src="demo-dados.js?v=mvxw9uzx"></script>
+<script src="demo.js?v=mvxw9uzx"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="theme-color" content="#0c1512" />
@@ -668,6 +668,7 @@
       </div>
       <div class="msGrid" id="msGrid"><div class="hint">carregando…</div></div>
       <button id="msParar" style="width:100%;margin-top:10px">⏹ tirar o mascote da tela</button>
+      <button id="msAtualizar" style="width:100%;margin-top:8px">🔄 atualizar (procurar vídeos novos na pasta)</button>
       <div class="msg" id="msMsg"></div>
       <div class="hint" style="margin-top:8px">Vídeo novo na pasta <b>00 - Arquivos/13 - Mascote/Videos</b> aparece aqui sozinho (o PC tira o verde em ~20 s); apagou da pasta, some daqui.</div>
     </div>
@@ -1375,6 +1376,14 @@
   $('msAleat').onchange = msCfg;
   $('msMin').onchange = msCfg;
   $('msMax').onchange = msCfg;
+  $('msAtualizar').onclick = async () => {
+    $('msAtualizar').disabled = true;
+    const r = await api('/api/mascote/atualizar', {});
+    $('msAtualizar').disabled = false;
+    if (!r.ok) return say($('msMsg'), r.error, false);
+    say($('msMsg'), r.novos.length ? `✔ ${r.novos.length} vídeo(s) novo(s) — tirando o fundo verde (uns 30 s cada)` : `✔ nenhum vídeo novo (${r.total} na pasta)`, true);
+    msLoad(true);
+  };
   $('msParar').onclick = async () => { await api('/api/mascote/parar', {}); say($('msMsg'), '✔ saiu da tela', true); msLoad(); };
   setInterval(() => { if (tab === 'ms') msLoad(); }, 4000);
   $('repLiveGame').onclick = () => { if (document.body.classList.contains('embed')) __demoIr('/replay-mobile?live=1'); else __demoIr('/replay-mobile?live=1'); };
@@ -2001,7 +2010,7 @@
   }
   $('escGear').onclick = () => {
     const f = $('escFrame');
-    if (!f.src) f.src = 'painel/?only=escalacao&v=mvxu3jdf';
+    if (!f.src) f.src = 'painel/?only=escalacao&v=mvxw9uzx';
     $('escSheet').style.display = 'flex';
   };
   $('escSheetClose').onclick = async () => { $('escSheet').style.display = 'none'; await loadState(); paintEsc(); };

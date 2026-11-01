@@ -36,6 +36,8 @@
     [/patrocinio/, 'coloca a arte do patrocinador na tela'],
     [/locucao/, 'grava a locução do patrocinador'],
     [/tabela/, 'mostra a tabela na transmissão'],
+    [/mascote\/atualizar/, 'procura vídeos novos na pasta do mascote'],
+    [/elenco/, 'salva no elenco pros próximos jogos (aqui no treino não fica salvo)'],
     [/mascote/, 'coloca o mascote na tela'],
     [/efeitos\/tocar/, 'toca o efeito NA LIVE (aqui no treino ele toca só no seu celular)'],
     [/efeitos/, ''],
@@ -57,6 +59,7 @@
   /* ── alguns toques mudam a tela, pra ficar parecido com o de verdade ── */
   let somTreino = null;
   function efeito(p, b) {
+    if (p === '/api/mascote/atualizar') return { total: (D['/api/mascote']?.videos ?? []).length, novos: [] };
     const fx = D['/api/efeitos'];
     if (fx && p === '/api/efeitos/tocar') {
       // no treino o som toca AQUI no celular (no jogo ele vai pra live e pras caixas do PC)
@@ -113,7 +116,6 @@
     try { corpo = init && init.body ? JSON.parse(init.body) : {}; } catch (e) { /* */ }
     let r;
     if (metodo === 'GET') r = D[p + url.search] || D[p] || { ok: true };
-    if (PAINEL) r = absoluto(r);
     else {
       const extra = efeito(p, corpo) || {};
       const t = oQue(p);
@@ -121,6 +123,7 @@
       if (t && Date.now() - ultimoToque < 2500) aviso(`🎓 No jogo, isto ${t}.`);
       r = { ok: true, ...(D[p] || {}), ...extra };
     }
+    if (PAINEL) r = absoluto(r);
     await espera(120);
     return new Response(JSON.stringify(r), { headers: { 'content-type': 'application/json' } });
   };
