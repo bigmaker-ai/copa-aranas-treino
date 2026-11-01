@@ -37,6 +37,13 @@
     [/locucao/, 'grava a locução do patrocinador'],
     [/tabela/, 'mostra a tabela na transmissão'],
     [/mascote/, 'coloca o mascote na tela'],
+    [/efeitos\/tocar/, 'toca o efeito NA LIVE (aqui no treino ele toca só no seu celular)'],
+    [/efeitos/, ''],
+    [/virais/, 'salva o lance na pasta 15 - Virais (deitado e em pé)'],
+    [/tarjas/, 'mostra a tarja na tela'],
+    [/relogio/, 'acerta o cronômetro do placar'],
+    [/ytela|ytchat/, 'mostra o vídeo / os comentários do YouTube'],
+    [/temas|takes/, 'põe os takes do cinegrafista no ar'],
     [/bate/, 'monta o bate-papo / entrevista na tela'],
     [/dividida/, 'divide a tela (jogo + outra câmera)'],
     [/artilheiro/, 'mostra o autor do gol'],
@@ -48,7 +55,32 @@
   const oQue = (p) => (O_QUE.find(([re]) => re.test(p)) || [, 'manda o comando pro PC'])[1];
 
   /* ── alguns toques mudam a tela, pra ficar parecido com o de verdade ── */
+  let somTreino = null;
   function efeito(p, b) {
+    const fx = D['/api/efeitos'];
+    if (fx && p === '/api/efeitos/tocar') {
+      // no treino o som toca AQUI no celular (no jogo ele vai pra live e pras caixas do PC)
+      try { somTreino?.pause(); } catch (e) { /* */ }
+      somTreino = new Audio(RAIZ + '/efeitos-som/' + encodeURIComponent(b.arquivo));
+      somTreino.play().catch(() => {});
+      const e = fx.efeitos.find((x) => x.arquivo === b.arquivo);
+      if (e) { e.usos = (e.usos || 0) + 1; e.ultimo = Date.now(); }
+      fx.tocando = b.arquivo; setTimeout(() => { if (fx.tocando === b.arquivo) fx.tocando = ''; }, 2500);
+      fx.efeitos.sort((a, c) => Number(!!c.fixado) - Number(!!a.fixado) || c.usos - a.usos || (c.ultimo || 0) - (a.ultimo || 0) || a.nome.localeCompare(c.nome, 'pt'));
+    }
+    if (fx && p === '/api/efeitos/parar') { try { somTreino?.pause(); } catch (e) { /* */ } fx.tocando = ''; }
+    if (fx && p === '/api/efeitos/fixar') {
+      const e = fx.efeitos.find((x) => x.arquivo === b.arquivo);
+      if (e) { e.fixado = !e.fixado; fx.efeitos.sort((a, c) => Number(!!c.fixado) - Number(!!a.fixado) || c.usos - a.usos || a.nome.localeCompare(c.nome, 'pt')); return { fixado: e.fixado }; }
+    }
+    if (fx && p === '/api/efeitos/editar') { const e = fx.efeitos.find((x) => x.arquivo === b.arquivo); if (e) { if (b.nome) e.nome = b.nome; if (b.emoji) e.emoji = b.emoji; if (b.setor) e.setor = b.setor; if (b.semFoto) delete e.img; } }
+    if (fx && p === '/api/efeitos/volume') fx.volume = b.volume;
+    if (fx && p === '/api/efeitos/setor' && b.acao === 'criar' && b.nome) { const id = 's' + Date.now().toString(36); fx.setores.splice(fx.setores.length - 1, 0, { id, nome: b.nome }); return { id }; }
+    const tj = D['/api/tarjas'];
+    if (tj && p === '/api/tarjas/salvar' && b.titulo) { const t = { id: b.id || 't' + Date.now().toString(36), tipo: b.tipo, titulo: b.titulo, sub: b.sub }; tj.lista = [t, ...tj.lista.filter((x) => x.id !== t.id)]; }
+    if (tj && p === '/api/tarjas/apagar') tj.lista = tj.lista.filter((x) => x.id !== b.id);
+    if (tj && p === '/api/tarjas/mostrar') { tj.noAr = b.id || 'avulsa'; setTimeout(() => { tj.noAr = ''; }, (b.segundos || 8) * 1000); }
+    if (tj && p === '/api/tarjas/tirar') tj.noAr = '';
     const m = D['/api/mascote'];
     if (m && p === '/api/mascote/tocar') { m.tocando = b.id; setTimeout(() => { m.tocando = null; }, 10000); }
     if (m && p === '/api/mascote/parar') m.tocando = null;
@@ -83,11 +115,11 @@
     if (metodo === 'GET') r = D[p + url.search] || D[p] || { ok: true };
     if (PAINEL) r = absoluto(r);
     else {
-      efeito(p, corpo);
+      const extra = efeito(p, corpo) || {};
       const t = oQue(p);
       // só avisa o que veio de um TOQUE (o app também manda coisas sozinho ao abrir)
       if (t && Date.now() - ultimoToque < 2500) aviso(`🎓 No jogo, isto ${t}.`);
-      r = { ok: true, ...(D[p] || {}) };
+      r = { ok: true, ...(D[p] || {}), ...extra };
     }
     await espera(120);
     return new Response(JSON.stringify(r), { headers: { 'content-type': 'application/json' } });

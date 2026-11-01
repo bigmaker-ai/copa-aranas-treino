@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<script src="demo-dados.js?v=mvx8pdye"></script>
-<script src="demo.js?v=mvx8pdye"></script>
+<script src="demo-dados.js?v=mvxu0dnp"></script>
+<script src="demo.js?v=mvxu0dnp"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="theme-color" content="#0c1512" />
@@ -68,6 +68,99 @@
   [data-ic="coffee"] { --m: url(ui/icons/coffee.svg); }
   [data-ic="tag"] { --m: url(ui/icons/tag.svg); }
   [data-ic="mascote"] { --m: url(ui/icons/smile.svg); }
+  [data-ic="previa"] { --m: url(ui/icons/eye.svg); }
+  [data-ic="virais"] { --m: url(ui/icons/flame.svg); }
+  [data-ic="overlays"] { --m: url(ui/icons/layers.svg); }
+  [data-ic="efeitos"] { --m: url(ui/icons/volume-2.svg); }
+  .fxSet { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 10px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .fxSet::-webkit-scrollbar { display: none; }
+  .fxSet button { flex: 0 0 auto; width: auto; min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14px; white-space: nowrap; }
+  .fxSet button.on { background: var(--green); color: #041004; border-color: var(--green); }
+  .fxBar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .fxBar input[type=range] { flex: 1; min-width: 0; width: auto; }
+  .fxBar button { flex: 0 0 auto; width: auto; min-height: 40px; padding: 0 12px; }
+  .fxBar .on { background: #ffd45a; color: #241800; border-color: #ffd45a; }
+  .fxGrid { display: grid; grid-template-columns: repeat(var(--fxCols, 3), 1fr); gap: 8px; }
+  .fxCard { position: relative; width: auto; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; aspect-ratio: 1; border-radius: 14px; overflow: hidden; border: 2px solid #2a3340; padding: 0; min-height: 0; background: #16202a center/cover no-repeat; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
+  .fxCard:active { transform: scale(.95); }
+  .fxCard .em { font-size: calc(90px / var(--fxCols, 3) * 1.6); line-height: 1; filter: drop-shadow(0 3px 6px rgba(0,0,0,.5)); }
+  .fxCard.foto .em { position: absolute; right: 4px; top: 4px; font-size: calc(60px / var(--fxCols, 3) * 1.6); }
+  .fxCard .nm { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 6px 6px; background: linear-gradient(transparent, rgba(0,0,0,.85)); color: #fff; font-weight: 800; font-size: calc(13px + 9px / var(--fxCols, 3)); line-height: 1.15; text-align: left; }
+  .fxCard .us { position: absolute; left: 5px; top: 5px; background: rgba(0,0,0,.6); color: #ffd45a; font-size: 11px; font-weight: 800; padding: 1px 6px; border-radius: 8px; }
+  .fxCard .fix { position: absolute; left: 5px; bottom: auto; top: 5px; font-size: 16px; filter: drop-shadow(0 1px 3px #000); }
+  .fxCard.fixado { border-color: #ffd45a; }
+  .fxCard.fixado .us { left: 26px; }
+  .fxCard.segura { transform: scale(.92); transition: transform .5s; }
+  .fxCard.toca { border-color: var(--green); box-shadow: 0 0 0 3px var(--green), 0 0 22px var(--green); }
+  .fxCard.edit::after { content: "✎"; position: absolute; left: 6px; bottom: 6px; display: none; }
+  .fxGrid.organizar .fxCard { border-style: dashed; border-color: #ffd45a; }
+  .fxEd { position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,.7); display: none; align-items: flex-end; }
+  .fxEd.on { display: flex; }
+  .fxEd > div { width: 100%; max-height: 92vh; overflow: auto; background: var(--bg, #0b1110); border-radius: 18px 18px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
+  .fxPrev { width: 110px; height: 110px; border-radius: 14px; background: #16202a center/cover no-repeat; display: flex; align-items: center; justify-content: center; font-size: 54px; flex: 0 0 auto; border: 2px solid #2a3340; }
+  .fxSetEd { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fxSetEd button { width: auto; min-height: 38px; padding: 0 12px; border-radius: 19px; font-size: 13px; }
+  .fxSetEd button.on { background: var(--green); color: #041004; border-color: var(--green); }  [data-ic="layers"] { --m: url(ui/icons/layers.svg); }
+  [data-ic="history"] { --m: url(ui/icons/history.svg); }
+  [data-ic="goal"] { --m: url(ui/icons/goal.svg); }
+  [data-ic="clapperboard"] { --m: url(ui/icons/clapperboard.svg); }
+  .tmTema { border-top: 1px solid #1d2630; padding: 8px 0; }
+  .tmTema:first-child { border-top: 0; }
+  .tmHead { display: flex; gap: 8px; align-items: center; }
+  .tmHead .nm { flex: 1; font-weight: 800; font-size: 15px; min-width: 0; }
+  .tmHead .nm small { display: block; color: var(--muted); font-weight: 500; font-size: 12px; }
+  .tmHead button { width: auto; min-height: 42px; padding: 0 12px; }
+  .tmThumbs { display: flex; gap: 6px; overflow-x: auto; margin-top: 8px; }
+  .tmThumbs .tk { flex: 0 0 auto; width: 120px; display: flex; flex-direction: column; gap: 4px; }
+  .tmThumbs img { width: 120px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; background: #000; }
+  .tmThumbs button { width: 100%; min-height: 34px; padding: 0 4px; font-size: 12px; }
+  .ytcMsg { display: flex; gap: 8px; padding: 6px 0; border-top: 1px solid #1d2630; font-size: 13px; }
+  .ytcMsg b { color: var(--green); }
+  .ovTipos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .ovTipos button.on { background: var(--green); color: #041004; border-color: var(--green); }
+  .ovItem { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid #1d2630; }
+  .ovItem:first-child { border-top: 0; }
+  .ovItem .t { flex: 1; font-weight: 700; font-size: 14px; line-height: 1.25; word-break: break-word; }
+  .ovItem .t small { display: block; color: var(--muted); font-weight: 500; }
+  .ovItem button { flex: 0 0 auto; width: auto; min-height: 42px; padding: 0 12px; }
+  .ovItem .t { min-width: 0; }
+  .ovItem.on .t { color: var(--green); }
+  .pvBox { position: relative; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid #2a3340; }
+  .pvBox img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .pvTag { position: absolute; left: 8px; top: 8px; background: #c4161c; color: #fff; font-weight: 800; font-size: 12px; padding: 3px 8px; border-radius: 6px; letter-spacing: .5px; }
+  .pvTag.velha { background: #6b5d12; }
+  .pvCena { position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,.65); color: #ddd; font-size: 12px; padding: 3px 8px; border-radius: 6px; }
+  .vrAgora { width: 100%; min-height: 120px; border-radius: 22px; font-size: 24px; font-weight: 900; background: #c4161c; color: #fff; border: 0; }
+  .vrAgora.on { background: #fff; color: #c4161c; animation: locP 1s infinite; }
+  .vrAntes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .vrAntes button { min-height: 60px; font-size: 17px; font-weight: 800; }
+  .vrItem { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid #1d2630; font-size: 13px; }
+  .vrItem b { flex: 1; font-weight: 600; word-break: break-word; }
+  .scGear { position: absolute; right: 10px; top: 10px; width: 40px; height: 40px; min-height: 0; padding: 0; border-radius: 12px; }
+  .card.score { position: relative; }
+  .rlTv { text-align: center; font: 400 44px/1 var(--disp); letter-spacing: 1px; margin: 4px 0 10px; }
+  .rlIn { display: flex; gap: 8px; align-items: center; justify-content: center; }
+  .rlIn input[type=text] { width: 80px; flex: 0 0 80px; text-align: center; font-size: 24px; font-weight: 800; }
+  .rlQ { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+  .glRow { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid #1d2630; }
+  .glRow:first-child { border-top: 0; }
+  .glMin { font: 400 20px/1 var(--disp); min-width: 52px; text-align: center; }
+  .glNm { flex: 1; font-weight: 700; font-size: 14px; line-height: 1.25; }
+  .glNm small { display: block; color: var(--muted); font-weight: 500; font-size: 12px; margin-top: 2px; }
+  .glNm .sem { color: #ffd45a; }
+  .glRow button { min-height: 40px; padding: 0 10px; font-size: 13px; }
+  .mmFase { font-weight: 800; font-size: 12px; letter-spacing: 2px; color: var(--green); margin: 12px 0 6px; }
+  .mmFase:first-child { margin-top: 0; }
+  .mmJogo { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--s1); border-radius: 10px; margin-bottom: 6px; font-size: 14px; font-weight: 700; flex-wrap: wrap; }
+  .mmJogo span { display: inline-flex; align-items: center; gap: 6px; opacity: .8; }
+  .mmJogo span.mmWin { opacity: 1; color: var(--green); }
+  .mmJogo img { width: 22px; height: 22px; object-fit: contain; }
+  .mmJogo i { opacity: .5; font-style: normal; }
+  .mmJogo small { width: 100%; color: var(--muted); font-weight: 500; font-size: 12px; }
+  .mmEmp { border: 1px solid #6b5d12; border-radius: 10px; padding: 10px; margin-top: 8px; font-size: 13px; }
+  .mmEmp button.on { background: var(--green); color: #041004; border-color: var(--green); }
+  .ptRec { display: inline-flex; align-items: center; gap: 8px; background: #2a0c0d; color: #ff8a8d; border: 1px solid #c4161c; border-radius: 20px; padding: 6px 12px; font-weight: 800; font-size: 13px; margin: 0 0 10px; }
+  .ptRec::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #ff3b30; animation: locP 1s infinite; }
   .msGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .msCard { background: var(--card, #111); border: 1px solid #2a3340; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
   .msCard.tocando { border-color: var(--green); box-shadow: 0 0 0 2px var(--green); }
@@ -532,6 +625,10 @@
       <button id="tabPt" data-ic="tag">Patrocínio</button>
       <button id="tabTb" data-ic="esc">Tabela</button>
       <button id="tabMs" data-ic="mascote">Mascote</button>
+      <button id="tabPv" data-ic="previa">Prévia</button>
+      <button id="tabVr" data-ic="virais">Virais</button>
+      <button id="tabOv" data-ic="overlays">Overlays</button>
+      <button id="tabFx" data-ic="efeitos">Efeitos</button>
       <button id="tabEq" data-ic="cam" class="on">Câmera</button>
     </nav>
 
@@ -552,7 +649,12 @@
       </div>
       <button id="cqReveal" class="dBig cqReveal" disabled>🏆 REVELAR O CRAQUE</button>
       <div id="cqTie" class="card hidden"><div class="lbl">Empate — quem é o craque?</div><div id="cqTieBtns" class="row" style="flex-wrap:wrap;margin-top:8px"></div></div>
-      <button id="cqReset" style="margin-top:10px">zerar votação</button>
+      <button id="cqReset" style="margin-top:10px">nova votação (os eleitos continuam salvos)</button>
+      <div class="card" style="margin-top:12px">
+        <div class="lbl" data-ic="trophy">Craques eleitos neste jogo</div>
+        <div id="cqEleitos"><div class="hint">nenhum ainda — quem for revelado fica salvo aqui</div></div>
+        <div class="dHint" style="margin-top:6px">▶ mostra só a animação do troféu desse craque (sem a votação). Dá pra eleger mais de um por jogo.</div>
+      </div>
       <div class="msg" id="cqMsg"></div>
     </div>
 
@@ -569,6 +671,64 @@
       <div class="msg" id="msMsg"></div>
       <div class="hint" style="margin-top:8px">Vídeo novo na pasta <b>00 - Arquivos/13 - Mascote/Videos</b> aparece aqui sozinho (o PC tira o verde em ~20 s); apagou da pasta, some daqui.</div>
     </div>
+
+    <!-- PRÉVIA: foto do que está no ar, atualizando (leve: só no Wi-Fi do PC, não usa internet) -->
+    <div id="panePv" class="hidden">
+      <div class="pvBox"><img id="pvImg" alt=""><span class="pvTag" id="pvTag">NO AR</span><span class="pvCena" id="pvCena"></span></div>
+      <div class="seg" style="margin-top:10px"><button id="pvFluida" class="on">Fluida</button><button id="pvEcon">Econômica</button></div>
+      <div class="dHint" id="pvInfo" style="margin-top:8px"></div>
+      <div class="hint" style="margin-top:8px">É uma prévia sem som, só pra conferir o que está no ar (placar, replay, patrocinador). Usa só o Wi-Fi do PC — não gasta a internet da transmissão. Saindo da aba, para de puxar.</div>
+    </div>
+
+    <!-- VIRAIS: lances que podem viralizar → recorte do que foi ao ar, deitado e em pé -->
+    <div id="paneVr" class="hidden">
+      <button id="vrAgora" class="vrAgora">⏺ GRAVAR AGORA</button>
+      <div class="card" style="margin-top:12px">
+        <div class="lbl" data-ic="history">Já aconteceu? Salvar os últimos…</div>
+        <div class="vrAntes" id="vrAntes"></div>
+        <div class="dHint" id="vrInfo" style="margin-top:8px"></div>
+      </div>
+      <div class="msg" id="vrMsg"></div>
+      <div class="card"><div class="lbl" data-ic="folder">Salvos agora há pouco</div><div id="vrLista"><div class="hint">nenhum ainda</div></div></div>
+      <div class="hint" style="margin-top:8px">Vai pra pasta <b>15 - Virais</b> no PC: <b>Horizontal</b> (como saiu na transmissão) e <b>Vertical</b> (pra stories/reels, com o fundo da Copa).</div>
+    </div>
+
+    <!-- OVERLAYS: tarjas salvas (nome de quem aparece, @instagram, texto) -->
+    <div id="paneOv" class="hidden">
+      <div class="card">
+        <div class="lbl" data-ic="layers">Nova tarja</div>
+        <div class="ovTipos"><button data-ovt="nome" class="on">👤 Nome</button><button data-ovt="instagram">📸 Instagram</button><button data-ovt="texto">💬 Texto</button></div>
+        <input type="text" id="ovTit" placeholder="nome de quem aparece" style="width:100%;margin-top:8px">
+        <input type="text" id="ovSub" placeholder="embaixo: cargo / time (opcional)" style="width:100%;margin-top:8px">
+        <div class="row" style="margin-top:8px;align-items:center"><span class="dHint" style="margin:0;flex:0 0 auto">fica na tela</span><select id="ovSeg" style="flex:1"><option value="5">5 s</option><option value="8" selected>8 s</option><option value="12">12 s</option><option value="20">20 s</option><option value="0">até eu tirar</option></select></div>
+        <div class="row" style="margin-top:8px"><button id="ovAr" class="air">▶ NO AR AGORA</button><button id="ovSalvar">💾 salvar</button></div>
+        <div class="msg" id="ovMsg"></div>
+      </div>
+      <div class="card"><div class="lbl" data-ic="folder" id="ovListaTit">Tarjas salvas</div><div id="ovLista"><div class="hint">nenhuma ainda — salve as que vai usar de novo (narrador, comentaristas, @ da Copa…)</div></div></div>
+      <button id="ovTirar" style="width:100%">⏹ tirar a tarja da tela</button>
+    </div>
+
+    <!-- EFEITOS SONOROS: toca no ar; setores no menu de cima; os mais usados primeiro -->
+    <div id="paneFx" class="hidden">
+      <div class="fxSet" id="fxSet"></div>
+      <div class="fxBar"><span class="dHint" style="margin:0">menores</span><input type="range" id="fxZoom" min="2" max="6" step="1" value="3" style="direction:rtl"><span class="dHint" style="margin:0">maiores</span></div>
+      <div class="fxGrid" id="fxGrid"><div class="hint">carregando…</div></div>
+      <div class="row" style="margin-top:12px"><button id="fxParar">⏹ parar o som</button><button id="fxOrg">✎ organizar</button></div>
+      <div class="row" style="margin-top:12px;align-items:center"><span class="dHint" style="margin:0;flex:0 0 auto">volume na live</span><input type="range" id="fxVol" min="0" max="100" step="5" style="flex:1;min-width:0"></div>
+      <div class="msg" id="fxMsg"></div>
+      <div class="hint" style="margin-top:6px">Toque = toca NA LIVE (e nas caixas do PC). Segure = ⭐ fixa no topo. Som novo na pasta <b>14 - Efeitos sonoros</b> aparece sozinho em "Novos". ✎ organizar: troque nome, emoji, foto e setor (e crie setores).</div>
+    </div>
+    <div class="fxEd" id="fxEd"><div>
+      <div style="display:flex;gap:14px;align-items:center">
+        <div class="fxPrev" id="fxEdPrev"></div>
+        <div style="flex:1;min-width:0"><input type="text" id="fxEdNome" placeholder="nome"><div class="row" style="margin-top:8px"><input type="text" id="fxEdEmoji" placeholder="emoji" style="max-width:90px;text-align:center;font-size:22px"><button id="fxEdOuvir">🎧 ouvir no celular</button></div></div>
+      </div>
+      <div class="lbl" style="margin-top:14px">Setor</div>
+      <div class="fxSetEd" id="fxEdSet"></div>
+      <div class="row" style="margin-top:12px"><label class="btnlink" style="flex:1;text-align:center;cursor:pointer">🖼 trocar a foto<input type="file" id="fxEdFoto" accept="image/*" hidden></label><button id="fxEdSemFoto">sem foto</button></div>
+      <div class="row" style="margin-top:12px"><button id="fxEdSalvar" class="air">salvar</button><button id="fxEdFechar">fechar</button></div>
+      <div class="msg" id="fxEdMsg"></div>
+    </div></div>
 
     <!-- TABELA: grupos do iFut com o placar ao vivo + gol dos outros jogos (animação no OBS) -->
     <div id="paneTb" class="hidden">
@@ -590,12 +750,12 @@
 
     <!-- PATROCÍNIO: um botão com a logo de cada patrocinador → tela do patrocínio no ar; de novo → volta pro jogo -->
     <div id="panePt" class="hidden">
+      <div class="ptRec hidden" id="ptRec"></div>
       <div class="ptState" id="ptState">…</div>
       <div class="ptGrid" id="ptGrid"></div>
       <div class="msg" id="ptMsg"></div>
-      <div class="hint" style="margin-top:10px">🎙 Locução: aperte ⏺ (botão vermelho no canto), toque na logo da empresa, fale e aperte ⏹ — o vídeo é salvo no PC com o nome da empresa.</div>
+      <div class="hint" style="margin-top:10px">🎙 Grava sozinho: toda vez que um patrocinador entra no ar, o PC salva o vídeo (com a voz da mesa) na pasta <b>11 - Locuções patrocinadores/&lt;empresa&gt;</b>, deitado e em pé (Horizontal / Vertical).</div>
     </div>
-    <button id="locBtn" class="locBtn hidden">⏺ GRAVAR LOCUÇÃO</button>
 
     <!-- DRONE: recebe o RTMP do app do drone, cena no OBS, no ar / gravar, botão flutuante (por cima do app do drone) -->
     <div id="paneDr" class="hidden">
@@ -685,6 +845,7 @@
           <button data-tela="intervalo" data-ic="coffee">Intervalo</button>
           <button data-tela="patrocinio" data-ic="tag">Patrocínio</button>
           <button id="tlChat" data-ic="video">◧ Comentários do YouTube (tela dividida)</button>
+          <button id="tlHl" data-ic="clapperboard">◧ Melhores momentos + jogo (tela dividida)</button>
           <button data-tela="outra" data-ic="pc" disabled><span id="telaOutra">outra cena</span></button>
         </div>
         <div class="inline">
@@ -694,12 +855,34 @@
       </div>
       <div class="msg" id="tlMsg"></div>
       <div class="card">
+        <div class="lbl" data-ic="clapperboard">Takes por tema <small>· cinegrafista</small></div>
+        <div id="tmLista"><div class="hint">nenhum tema ainda — na câmera do cinegrafista, escolha o 🏷 tema antes de gravar</div></div>
+        <div class="row" style="margin-top:8px"><button id="tmSair">⏹ tirar do ar</button><button id="tmNovo">+ novo tema</button></div>
+        <div class="dHint" id="tmInfo" style="margin-top:6px"></div>
+        <div class="dHint" style="margin-top:6px">▶ = os takes do tema em sequência, em loop. Toque no tema pra ver cada take (cada um roda sozinho em loop). Tema com o nome de um patrocinador roda sozinho dentro da tela dele.</div>
+        <div class="msg" id="tmMsg"></div>
+      </div>
+      <div class="card">
+        <div class="lbl" data-ic="play">Vídeo do YouTube na transmissão</div>
+        <input type="text" id="ytLink" placeholder="cole o link do vídeo (youtube.com / youtu.be)" autocapitalize="off" autocomplete="off" style="width:100%">
+        <div class="row" style="margin-top:8px"><button id="ytCheia" class="air">TELA CHEIA</button><button id="ytDiv">◧ COM O JOGO</button><button id="ytSair">SAIR</button></div>
+        <div class="dHint" style="margin-top:6px">Toca com o som do vídeo. Dá pra começar num ponto: link com &amp;t=90 (segundos). Vídeo com incorporação desligada pelo dono não toca fora do YouTube.</div>
+        <div class="msg" id="ytMsg"></div>
+      </div>
+      <div class="card">
+        <div class="lbl" data-ic="users">Comentários do YouTube</div>
+        <label class="row" style="gap:10px;align-items:center;justify-content:flex-start"><input type="checkbox" id="ytcCanto" style="flex:0 0 auto;width:22px;height:22px"> <b>mostrar pequeno no canto da tela do jogo</b></label>
+        <div class="dHint" style="margin:6px 0">cada comentário novo entra animado e some sozinho. Pra ver grande do lado do jogo: ◧ Comentários do YouTube (tela dividida), aqui em cima.</div>
+        <div id="ytcInfo" class="dHint"></div>
+        <div id="ytcLista"></div>
+      </div>
+      <div class="card">
         <div class="lbl" data-ic="video">Bate-papo / entrevista <small>· escolha 2 ou 3</small></div>
         <div class="bateFontes" id="bateFontes"></div>
         <div class="row" style="margin-top:10px"><button id="bateAr" class="air">NO AR</button><button id="bateSair">SAIR</button></div>
         <div class="lbl" style="margin-top:14px">Google Meet</div>
         <div class="dHint" style="margin:0 0 8px">O PC abre um Chrome só da transmissão, que entra na chamada como <b>Copa Aranãs TV</b> (sem câmera e sem microfone). Depois é só tocar no NOME de quem vai aparecer.</div>
-        <div class="row" style="gap:8px"><input id="tvLink" placeholder="link do Meet (abc-defg-hij)" style="flex:1" autocapitalize="off" autocomplete="off"><button id="tvAbrir" style="flex:0 0 96px">ABRIR</button></div>
+        <div class="row" style="gap:8px"><input type="text" id="tvLink" placeholder="link do Meet (abc-defg-hij)" style="flex:1" autocapitalize="off" autocomplete="off"><button id="tvAbrir" style="flex:0 0 96px">ABRIR</button></div>
         <div class="tvFase" id="tvFase">Meet fechado</div>
         <button id="tvEntrar" class="hidden" style="width:100%;margin-top:8px">ENTRAR NA CHAMADA</button>
         <div class="tvPessoas" id="tvPessoas"></div>
@@ -753,6 +936,7 @@
     <!-- PLACAR -->
     <div id="paneSc" class="hidden">
       <div class="card score">
+        <button id="scGear" class="gear scGear" data-ic="settings" title="acertar o cronômetro"></button>
         <div class="sbx">
           <div class="tm" id="scHome">CASA</div>
           <div class="sc" id="scScore">0 × 0</div>
@@ -766,6 +950,22 @@
           <button class="minus" id="scAwayMinus" data-ic="minus" title="tirar gol"></button>
         </div>
         <div class="msg" id="scMsg"></div>
+      </div>
+      <!-- ⚙ CRONÔMETRO: acerta o tempo como aparece na TV -->
+      <div class="card hidden" id="rlBox">
+        <div class="lbl" data-ic="timer">Cronômetro <small>· como aparece na TV</small></div>
+        <div class="rlTv" id="rlTv">—</div>
+        <div class="rlIn"><input type="text" id="rlMin" inputmode="numeric" maxlength="3" placeholder="min"><b>:</b><input type="text" id="rlSeg" inputmode="numeric" maxlength="2" placeholder="seg"><button id="rlSet" class="air" style="flex:1 1 auto;width:auto;min-width:0;padding:0 14px">ACERTAR</button></div>
+        <div class="rlQ"><button data-rl="-60000">−1 min</button><button data-rl="-10000">−10 s</button><button data-rl="10000">+10 s</button><button data-rl="60000">+1 min</button></div>
+        <div class="row" style="margin-top:8px"><button id="rlPlay">⏸ pausar</button><button id="rlFechar">fechar</button></div>
+        <div class="msg" id="rlMsg"></div>
+      </div>
+      <!-- GOLS DO JOGO: dizer o autor depois, mostrar a animação do autor na hora -->
+      <div class="card">
+        <div class="lbl" data-ic="goal">Gols do jogo <small>· autor do gol</small></div>
+        <div id="glLista"><div class="hint">nenhum gol ainda</div></div>
+        <div class="dHint" id="glInfo" style="margin-top:6px">A animação do autor entra sozinha depois do replay do gol, quando a tela estiver livre. Não sabe quem fez? Marque depois aqui.</div>
+        <div class="msg" id="glMsg"></div>
       </div>
       <div class="card c-mom">
         <div class="lbl" data-ic="timer">Momento do jogo <small>· toque 2x</small></div>
@@ -828,6 +1028,7 @@
           <svg class="ring" viewBox="0 0 108 108"><circle class="trk" cx="54" cy="54" r="48"/><circle id="repArc" class="arc" cx="54" cy="54" r="48"/></svg>
           <span id="repBig">REPLAY</span><small id="repSub">salva o lance</small>
         </button>
+        <label class="row" style="gap:10px;align-items:center;justify-content:center;margin:8px 0 2px;font-weight:700"><input type="checkbox" id="repDiv" style="flex:0 0 auto;width:22px;height:22px"> replay em tela dividida (do lado do jogo)</label>
         <div id="repWarn" class="repWarn hidden"></div>
         <div id="repState" class="repState"></div>
         <div id="repActs" class="hidden"></div>
@@ -923,7 +1124,7 @@
       <b style="flex:1;font:400 20px var(--disp);letter-spacing:.6px">MONTAR A ESCALAÇÃO</b>
       <button id="escSheetClose" class="gear" data-ic="x"></button>
     </div>
-    <iframe id="escFrame" style="flex:1;border:0;width:100%;background:var(--bg)"></iframe>
+    <iframe id="escFrame" allow="web-share; clipboard-write" style="flex:1;border:0;width:100%;background:var(--bg)"></iframe>
   </div>
 
 <script src="intercom.js"></script>
@@ -1090,6 +1291,19 @@
     $('panePt').classList.toggle('hidden', t !== 'pt');
     $('paneTb').classList.toggle('hidden', t !== 'tb');
     $('paneMs').classList.toggle('hidden', t !== 'ms');
+    $('panePv').classList.toggle('hidden', t !== 'pv');
+    $('tabPv').classList.toggle('on', t === 'pv');
+    if (t === 'pv') pvLiga(); else pvDesliga();
+    $('paneVr').classList.toggle('hidden', t !== 'vr');
+    $('paneOv').classList.toggle('hidden', t !== 'ov');
+    $('paneFx').classList.toggle('hidden', t !== 'fx');
+    $('tabFx').classList.toggle('on', t === 'fx');
+    if (t === 'fx') fxLoad(true);
+    $('tabOv').classList.toggle('on', t === 'ov');
+    if (t === 'ov') ovLoad();
+    if (t === 'tl') setTimeout(() => { ytcLoad(); ytLoad(); tmLoad(); }, 0);
+    $('tabVr').classList.toggle('on', t === 'vr');
+    if (t === 'vr') vrLoad();
     $('tabMs').classList.toggle('on', t === 'ms');
     if (t === 'ms') msLoad(true);
     $('tabTb').classList.toggle('on', t === 'tb');
@@ -1110,7 +1324,7 @@
     $('tabEq').classList.toggle('on', t === 'eq');
     $('tabRep').classList.toggle('on', t === 'rep');
     $('tabSc').classList.toggle('on', t === 'sc');
-    if (t === 'sc') loadState();
+    if (t === 'sc') { loadState(); glLoad(); }
     $('paneTl').classList.toggle('hidden', t !== 'tl');
     $('tabTl').classList.toggle('on', t === 'tl');
     if (t === 'tl') loadCena();
@@ -1301,7 +1515,7 @@
     try { conhecidas = JSON.parse(localStorage.getItem(MENUS + '.todas') || 'null'); } catch { /* */ }
     // aba que não existia quando o menu foi salvo (ex: Mascote) aparece até a pessoa escolher
     // menu salvo antes desta versão: conhecia todas menos a Mascote
-    if (esc && !conhecidas) conhecidas = todas.map((b) => b.id).filter((id) => id !== 'tabMs');
+    if (esc && !conhecidas) conhecidas = todas.map((b) => b.id).filter((id) => !['tabMs', 'tabPv', 'tabVr', 'tabOv', 'tabFx'].includes(id));
     if (esc) esc = [...esc, ...todas.map((b) => b.id).filter((id) => !conhecidas.includes(id))];
     for (const b of todas) { const on = !esc || esc.includes(b.id); b.classList.toggle('hidden', !on); if (on) vis++; }
     document.body.classList.toggle('menu3', vis <= 3);
@@ -1353,6 +1567,13 @@
     $('tlChat').classList.toggle('on', !!(st2.on && st2.fonte === 'chat'));
     say($('tlMsg') || $('repMsg'), r.ok ? (st2.on ? '✔ comentários no ar (toque de novo pra sair)' : '✔ voltou pro jogo') : r.error, r.ok);
   };
+  // MELHORES MOMENTOS de um lado, o jogo do outro (de novo = volta pro jogo)
+  $('tlHl').onclick = async () => {
+    const r = await api('/api/dividida', { fonte: 'melhores' });
+    const st2 = await api('/api/dividida');
+    $('tlHl').classList.toggle('on', !!(st2.on && st2.fonte === 'melhores'));
+    say($('tlMsg') || $('repMsg'), r.ok ? (st2.on ? '✔ melhores momentos + jogo no ar (toque de novo pra sair)' : '✔ voltou pro jogo') : r.error, r.ok);
+  };
   /* ── LOCUÇÃO DO PATROCINADOR: botão flutuante (só na aba Patrocínio) ── */
   let locEst = { gravando: false, secs: 0 }, locAt = 0;
   async function locPoll() {
@@ -1365,24 +1586,350 @@
       locPoll.esperando = false;
     }
   }
+  // grava sozinho: o selo mostra quem está sendo gravado (sem botão)
   setInterval(() => {
-    $('locBtn').classList.toggle('hidden', tab !== 'pt');
     if (tab !== 'pt') return;
     const s = locEst.gravando ? Math.floor(locEst.secs + (performance.now() - locAt) / 1000) : 0;
-    $('locBtn').classList.toggle('on', !!locEst.gravando);
-    $('locBtn').textContent = locEst.gravando ? `⏹ PARAR · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}${locEst.marca ? ' · ' + locEst.marca : ''}` : '⏺ GRAVAR LOCUÇÃO';
+    $('ptRec').classList.toggle('hidden', !locEst.gravando);
+    if (locEst.gravando) $('ptRec').textContent = `gravando ${locEst.marca || 'patrocinador'} · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   }, 500);
-  setInterval(() => { if (tab === 'pt') locPoll(); }, 2000);
-  $('locBtn').onclick = async () => {
-    $('locBtn').disabled = true;
-    const r = await api(locEst.gravando ? '/api/locucao/fim' : '/api/locucao/inicio', {});
-    $('locBtn').disabled = false;
-    if (!r.ok) say($('ptMsg'), r.error, false);
-    else if (locEst.gravando) { locPoll.esperando = true; say($('ptMsg'), `salvando a locução de ${r.marca}…`, true); }
-    else say($('ptMsg'), '⏺ gravando — toque na logo da empresa e fale', true);
-    if (navigator.vibrate) navigator.vibrate(60);
-    await locPoll();
+  setInterval(() => { if (tab === 'pt') { locPoll.esperando = true; locPoll(); } }, 2000);
+
+  /* ── PRÉVIA: puxa a próxima foto só depois que a anterior chegou (celular lento não acumula) ── */
+  var pvOn = false, pvModo = 'fluida', pvT = 0, pvBytes = 0, pvDesde = 0;
+  function pvProxima() {
+    if (!pvOn) return;
+    const t0 = performance.now();
+    fetch(`/api/previa.jpg?modo=${pvModo}&t=${Date.now()}`, { cache: 'no-store' }).then(async (r) => {
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'sem prévia');
+      const idade = Number(r.headers.get('X-Idade') || 0);
+      const cena = decodeURIComponent(r.headers.get('X-Cena') || '');
+      const b = await r.blob();
+      pvBytes += b.size;
+      const u = URL.createObjectURL(b);
+      const img = $('pvImg');
+      const velha = img.src;
+      img.onload = () => { if (velha.startsWith('blob:')) URL.revokeObjectURL(velha); };
+      img.src = u;
+      $('pvTag').classList.toggle('velha', idade > 4000);
+      $('pvTag').textContent = idade > 4000 ? 'ATRASADA' : 'NO AR';
+      $('pvCena').textContent = cena;
+      const s = (performance.now() - pvDesde) / 1000;
+      if (s > 3) $('pvInfo').textContent = `usando ~${Math.round(pvBytes / 1024 / s)} KB/s do Wi-Fi (${pvModo === 'fluida' ? 'fluida' : 'econômica'})`;
+    }).catch((e) => { $('pvInfo').textContent = `⚠ ${e.message}`; }).finally(() => {
+      if (!pvOn) return;
+      const espera = Math.max(0, (pvModo === 'fluida' ? 500 : 2000) - (performance.now() - t0));
+      pvT = setTimeout(pvProxima, espera);
+    });
+  }
+  function pvLiga() { if (pvOn) return; pvOn = true; pvBytes = 0; pvDesde = performance.now(); pvProxima(); }
+  function pvDesliga() { pvOn = false; clearTimeout(pvT); }
+  // tela apagada / app em segundo plano: para de puxar
+  document.addEventListener('visibilitychange', () => { if (document.hidden) pvDesliga(); else if (tab === 'pv') pvLiga(); });
+  const pvSet = (m) => { pvModo = m; $('pvFluida').classList.toggle('on', m === 'fluida'); $('pvEcon').classList.toggle('on', m !== 'fluida'); pvBytes = 0; pvDesde = performance.now(); };
+  $('pvFluida').onclick = () => pvSet('fluida');
+  $('pvEcon').onclick = () => pvSet('economica');
+
+  /* ── VIRAIS: gravar agora (liga/desliga) ou salvar o que já passou ── */
+  var vrEst = null, vrAt = 0;
+  const vrRot = (s) => (s < 60 ? `${s} s` : `${s / 60} min`);
+  async function vrLoad() {
+    const r = await api('/api/virais');
+    if (!r.ok) return;
+    vrEst = r; vrAt = performance.now();
+    if (!$('vrAntes').children.length) {
+      $('vrAntes').innerHTML = r.antes.map((s) => `<button data-vra="${s}">${vrRot(s)}</button>`).join('');
+      $('vrAntes').querySelectorAll('[data-vra]').forEach((b) => (b.onclick = async () => {
+        b.disabled = true;
+        const x = await api('/api/virais/antes', { seg: Number(b.dataset.vra) });
+        b.disabled = false;
+        if (navigator.vibrate) navigator.vibrate(60);
+        say($('vrMsg'), x.ok ? (x.curto ? `✔ salvando os últimos ${x.curto} s (a gravação começou há pouco)` : `✔ salvando os últimos ${vrRot(Number(b.dataset.vra))}…`) : x.error, x.ok);
+        vrLoad();
+      }));
+    }
+    $('vrInfo').textContent = r.gravacaoLigada ? `gravação do jogo ligada há ${Math.floor(r.desdeSeg / 60)} min — dá pra salvar o que passou` : '⚠ a gravação do jogo está desligada (liga sozinha quando a bola rola) — só o ⏺ GRAVAR AGORA funciona';
+    const ic = { salvando: '⏳', pronto: '✅', erro: '⚠️' };
+    $('vrLista').innerHTML = r.lista.length ? r.lista.map((i) => `<div class="vrItem"><span>${ic[i.estado]}</span><b>${i.nome.replace(/</g, '&lt;')}${i.erro ? `<br><small style="color:#ff8a8d">${i.erro.replace(/</g, '&lt;')}</small>` : ''}</b><span>${i.secs}s</span></div>`).join('') : '<div class="hint">nenhum ainda</div>';
+  }
+  setInterval(() => {
+    if (tab !== 'vr' || !vrEst) return;
+    const s = vrEst.gravando ? Math.floor(vrEst.secs + (performance.now() - vrAt) / 1000) : 0;
+    $('vrAgora').classList.toggle('on', !!vrEst.gravando);
+    $('vrAgora').textContent = vrEst.gravando ? `⏹ PARAR E SALVAR · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : '⏺ GRAVAR AGORA';
+  }, 300);
+  setInterval(() => { if (tab === 'vr') vrLoad(); }, 2500);
+  $('vrAgora').onclick = async () => {
+    $('vrAgora').disabled = true;
+    const r = await api('/api/virais/agora', {});
+    $('vrAgora').disabled = false;
+    if (navigator.vibrate) navigator.vibrate(r.ok && r.gravando ? 80 : [60, 40, 60]);
+    say($('vrMsg'), r.ok ? (r.gravando ? '⏺ gravando — toque de novo pra salvar' : '✔ salvando o lance…') : r.error, r.ok);
+    vrLoad();
   };
+  $('tabPv').onclick = () => showTab('pv');
+  $('tabOv').onclick = () => showTab('ov');
+  $('tabFx').onclick = () => showTab('fx');
+
+  /* ── EFEITOS SONOROS ── */
+  var fxEst = null, fxSetor = '', fxOrg = false, fxEditando = null, fxNovaFoto = null, fxAudio = null;
+  try { fxSetor = localStorage.getItem('aranas.fx.setor') || 'mais'; } catch { fxSetor = 'mais'; }
+  // o tamanho dos cartões (mais colunas = menores) fica salvo neste celular
+  const fxCols = () => { let c = 3; try { c = Number(localStorage.getItem('aranas.fx.cols')) || 3; } catch { /* */ } return Math.max(2, Math.min(6, c)); };
+  $('fxGrid').style.setProperty('--fxCols', fxCols());
+  $('fxZoom').value = fxCols();
+  $('fxZoom').oninput = (e) => { $('fxGrid').style.setProperty('--fxCols', e.target.value); try { localStorage.setItem('aranas.fx.cols', e.target.value); } catch { /* */ } };
+  const fxEsc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const FX_COR = ['#1d4ed8', '#7c3aed', '#be185d', '#b45309', '#047857', '#0e7490', '#9f1239', '#4d7c0f'];
+  const fxCor = (s) => FX_COR[[...String(s)].reduce((a, c) => a + c.charCodeAt(0), 0) % FX_COR.length];
+  async function fxLoad(tudo) {
+    const r = await api('/api/efeitos');
+    if (!r.ok) return;
+    const k = JSON.stringify([r.setores, r.efeitos.map((e) => [e.arquivo, e.nome, e.emoji, e.setor, e.img, e.usos, e.fixado]), fxSetor, fxOrg]);
+    const mudou = k !== fxLoad.k;
+    fxLoad.k = k;
+    fxEst = r;
+    if (tudo || mudou) {
+      if (document.activeElement !== $('fxVol')) $('fxVol').value = Math.round(r.volume * 100);
+      const usados = r.efeitos.filter((e) => e.usos > 0 || e.fixado);
+      const chips = [['mais', '⭐ Mais usados'], ['todos', 'Todos'], ...r.setores.map((s) => [s.id, s.nome])];
+      if (fxSetor === 'mais' && !usados.length) fxSetor = 'todos';
+      $('fxSet').innerHTML = chips.map(([id, nm]) => `<button data-fxs="${id}" class="${id === fxSetor ? 'on' : ''}">${fxEsc(nm)}${fxOrg && !['mais', 'todos', 'novos'].includes(id) ? ' ✎' : ''}</button>`).join('') + (fxOrg ? '<button data-fxs="+">＋ setor</button>' : '');
+      $('fxSet').querySelectorAll('[data-fxs]').forEach((b) => (b.onclick = async () => {
+        const id = b.dataset.fxs;
+        if (id === '+') { fxSetorCriar(); return; }
+        if (fxOrg && id === fxSetor && !['mais', 'todos', 'novos'].includes(id)) { fxSetorEditar(id); return; }
+        fxSetor = id; try { localStorage.setItem('aranas.fx.setor', id); } catch { /* */ }
+        fxLoad(true);
+      }));
+      const lista = fxSetor === 'mais' ? usados.slice(0, 24) : fxSetor === 'todos' ? r.efeitos : r.efeitos.filter((e) => e.setor === fxSetor);
+      $('fxGrid').classList.toggle('organizar', fxOrg);
+      $('fxGrid').innerHTML = lista.length ? lista.map((e) => `<button class="fxCard ${e.img ? 'foto' : ''} ${e.fixado ? 'fixado' : ''}" data-fx="${fxEsc(e.arquivo)}" style="${e.img ? `background-image:url('efeitos-img/${encodeURIComponent(e.img)}')` : `background:radial-gradient(circle at 30% 25%, ${fxCor(e.setor)}, #0b1117 85%)`}">
+          <span class="em">${fxEsc(e.emoji)}</span>${e.fixado ? '<span class="fix">⭐</span>' : ''}${e.usos ? `<span class="us">${e.usos}×</span>` : ''}<span class="nm">${fxEsc(e.nome)}</span></button>`).join('')
+        : `<div class="hint" style="grid-column:1/-1">${fxSetor === 'mais' ? 'toque nos efeitos — os mais usados aparecem aqui' : 'nenhum efeito neste setor — em ✎ organizar, escolha o setor de cada efeito'}</div>`;
+      $('fxGrid').querySelectorAll('[data-fx]').forEach((b) => {
+        // SEGURAR o cartão = estrelinha (fixa no topo / desfixa); tocar = toca o som
+        let t = 0, segurou = false;
+        const solta = () => { clearTimeout(t); b.classList.remove('segura'); };
+        b.addEventListener('pointerdown', () => {
+          segurou = false;
+          b.classList.add('segura');
+          t = setTimeout(async () => {
+            segurou = true;
+            b.classList.remove('segura');
+            if (navigator.vibrate) navigator.vibrate([40, 40, 80]);
+            const x = await api('/api/efeitos/fixar', { arquivo: b.dataset.fx });
+            say($('fxMsg'), x.ok ? (x.fixado ? '⭐ fixado no topo' : 'tirado do topo') : x.error, x.ok);
+            fxLoad(true);
+          }, 650);
+        });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => b.addEventListener(ev, solta));
+        b.addEventListener('contextmenu', (ev) => ev.preventDefault());
+        b.onclick = () => { if (segurou) { segurou = false; return; } if (fxOrg) fxAbrir(b.dataset.fx); else fxTocar(b); };
+      });
+    }
+    $('fxGrid').querySelectorAll('[data-fx]').forEach((b) => b.classList.toggle('toca', b.dataset.fx === r.tocando));
+  }
+  async function fxTocar(b) {
+    b.classList.add('toca');
+    if (navigator.vibrate) navigator.vibrate(30);
+    const r = await api('/api/efeitos/tocar', { arquivo: b.dataset.fx });
+    if (!r.ok) say($('fxMsg'), r.error, false);
+    setTimeout(() => fxLoad(), 400);
+  }
+  setInterval(() => { if (tab === 'fx') fxLoad(); }, 2500);
+  $('fxParar').onclick = async () => { await api('/api/efeitos/parar', {}); fxLoad(); };
+  $('fxOrg').onclick = () => { fxOrg = !fxOrg; $('fxOrg').classList.toggle('on', fxOrg); $('fxOrg').textContent = fxOrg ? '✓ pronto (sair de organizar)' : '✎ organizar'; if (fxOrg) window.scrollTo({ top: 0, behavior: 'smooth' }); say($('fxMsg'), fxOrg ? 'toque num efeito pra editar · toque de novo no setor aberto pra renomear' : '', true); fxLoad(true); };
+  $('fxVol').onchange = async (e) => { const r = await api('/api/efeitos/volume', { volume: Number(e.target.value) / 100 }); say($('fxMsg'), r.ok ? `✔ volume ${e.target.value}%` : r.error, r.ok); };
+  async function fxSetorCriar() {
+    const nome = (window.prompt('Nome do novo setor (ex: Torcida, Gol, Juiz)') || '').trim();
+    if (!nome) return;
+    const r = await api('/api/efeitos/setor', { acao: 'criar', nome });
+    if (r.ok) { fxSetor = r.id; } else say($('fxMsg'), r.error, false);
+    fxLoad(true);
+  }
+  async function fxSetorEditar(id) {
+    const s = fxEst.setores.find((x) => x.id === id);
+    const nome = window.prompt(`Renomear "${s.nome}" — ou escreva APAGAR pra tirar o setor (os efeitos vão pra "Novos")`, s.nome);
+    if (nome == null || !nome.trim()) return;
+    const r = nome.trim().toUpperCase() === 'APAGAR' ? await api('/api/efeitos/setor', { acao: 'apagar', id }) : await api('/api/efeitos/setor', { acao: 'renomear', id, nome });
+    if (!r.ok) say($('fxMsg'), r.error, false);
+    if (nome.trim().toUpperCase() === 'APAGAR') fxSetor = 'todos';
+    fxLoad(true);
+  }
+  // ── editor de um efeito ──
+  function fxPrev(e, img) {
+    const p = $('fxEdPrev');
+    p.style.backgroundImage = img ? `url('${img}')` : '';
+    p.style.background = img ? '' : `radial-gradient(circle at 30% 25%, ${fxCor(e.setor)}, #0b1117 85%)`;
+    if (img) p.style.backgroundImage = `url('${img}')`;
+    p.textContent = $('fxEdEmoji').value || e.emoji;
+  }
+  function fxAbrir(arquivo) {
+    const e = fxEst.efeitos.find((x) => x.arquivo === arquivo);
+    if (!e) return;
+    fxEditando = { ...e }; fxNovaFoto = null;
+    $('fxEdNome').value = e.nome; $('fxEdEmoji').value = e.emoji;
+    $('fxEdSet').innerHTML = fxEst.setores.map((s) => `<button data-fxes="${s.id}" class="${s.id === e.setor ? 'on' : ''}">${fxEsc(s.nome)}</button>`).join('');
+    $('fxEdSet').querySelectorAll('[data-fxes]').forEach((b) => (b.onclick = () => { fxEditando.setor = b.dataset.fxes; $('fxEdSet').querySelectorAll('[data-fxes]').forEach((x) => x.classList.toggle('on', x === b)); }));
+    fxPrev(e, e.img ? `efeitos-img/${encodeURIComponent(e.img)}` : '');
+    say($('fxEdMsg'), '', true);
+    $('fxEd').classList.add('on');
+  }
+  $('fxEdEmoji').oninput = () => { $('fxEdPrev').textContent = $('fxEdEmoji').value; };
+  $('fxEdOuvir').onclick = () => {
+    if (!fxEditando) return;
+    try { fxAudio?.pause(); } catch { /* */ }
+    fxAudio = new Audio(`efeitos-som/${encodeURIComponent(fxEditando.arquivo)}`);
+    fxAudio.play().catch(() => say($('fxEdMsg'), 'o celular não deixou tocar — toque de novo', false));
+  };
+  // foto da galeria: reduz no celular (lado maior 480 px) antes de mandar
+  $('fxEdFoto').onchange = (ev) => {
+    const f = ev.target.files?.[0];
+    if (!f) return;
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 480 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      fxNovaFoto = c.toDataURL('image/jpeg', 0.85);
+      fxPrev(fxEditando, fxNovaFoto);
+      URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(f);
+    ev.target.value = '';
+  };
+  $('fxEdSemFoto').onclick = () => { fxNovaFoto = ''; fxPrev(fxEditando, ''); };
+  $('fxEdFechar').onclick = () => { $('fxEd').classList.remove('on'); try { fxAudio?.pause(); } catch { /* */ } };
+  $('fxEd').onclick = (e) => { if (e.target === $('fxEd')) $('fxEdFechar').onclick(); };
+  $('fxEdSalvar').onclick = async () => {
+    if (!fxEditando) return;
+    const r = await api('/api/efeitos/editar', { arquivo: fxEditando.arquivo, nome: $('fxEdNome').value, emoji: $('fxEdEmoji').value, setor: fxEditando.setor, semFoto: fxNovaFoto === '' });
+    if (!r.ok) return say($('fxEdMsg'), r.error, false);
+    if (fxNovaFoto) {
+      const x = await api('/api/efeitos/imagem', { arquivo: fxEditando.arquivo, dataUrl: fxNovaFoto });
+      if (!x.ok) return say($('fxEdMsg'), x.error, false);
+    }
+    $('fxEd').classList.remove('on');
+    say($('fxMsg'), '✔ salvo', true);
+    fxLoad(true);
+  };
+
+  /* ── TAKES POR TEMA (cinegrafista) ── */
+  var tmAberto = '';
+  async function tmLoad() {
+    const r = await api('/api/cine/temas');
+    if (!r.ok) return;
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const L = r.lista || [];
+    $('tmInfo').textContent = L.length ? `${L.length} temas pro cinegrafista escolher: ${L.filter((t) => t.patrocinador).length} patrocinadores (automáticos) + ${L.filter((t) => !t.patrocinador).length} criados` : '';
+    $('tmLista').innerHTML = r.temas.length ? r.temas.map((t, i) => `<div class="tmTema">
+        <div class="tmHead">
+          <span class="nm" data-tmab="${i}">${t.patrocinador ? '🏷 ' : '🎬 '}${esc(t.tema)}<small>${t.takes.length} take${t.takes.length === 1 ? '' : 's'}${t.patrocinador ? ' · roda na tela do patrocinador' : ''} · toque pra ver</small></span>
+          <button class="air" data-tmseq="${i}" data-modo="cheia">▶</button>
+          <button data-tmseq="${i}" data-modo="dividida">◧</button>
+        </div>
+        ${tmAberto === t.tema ? `<div class="tmThumbs">${t.takes.map((k, j) => `<div class="tk"><img src="${k.thumb}" alt="" onerror="this.style.visibility='hidden'"><button data-tmk="${i}:${j}" data-modo="cheia">🔁 loop</button><button data-tmk="${i}:${j}" data-modo="dividida">◧ loop</button></div>`).join('')}</div>` : ''}
+      </div>`).join('') : '<div class="hint">nenhum tema ainda — na câmera do cinegrafista, escolha o 🏷 tema antes de gravar</div>';
+    $('tmLista').querySelectorAll('[data-tmab]').forEach((b) => (b.onclick = () => { const t = r.temas[+b.dataset.tmab].tema; tmAberto = tmAberto === t ? '' : t; tmLoad(); }));
+    $('tmLista').querySelectorAll('[data-tmseq]').forEach((b) => (b.onclick = async () => {
+      const t = r.temas[+b.dataset.tmseq];
+      say($('tmMsg'), t.takes.length > 1 ? 'emendando os takes… (a 1ª vez demora uns segundos)' : 'colocando no ar…', true);
+      const x = await api('/api/cine/temas/tocar', { tema: t.tema, modo: b.dataset.modo });
+      say($('tmMsg'), x.ok ? `✔ "${t.tema}" no ar em loop${b.dataset.modo === 'dividida' ? ' (do lado do jogo)' : ''} — ⏹ pra tirar` : x.error, x.ok);
+    }));
+    $('tmLista').querySelectorAll('[data-tmk]').forEach((b) => (b.onclick = async () => {
+      const [i, j] = b.dataset.tmk.split(':').map(Number);
+      const k = r.temas[i].takes[j];
+      const x = await api('/api/cine/takes/tocar', { who: k.who, file: k.file, modo: b.dataset.modo, loop: true });
+      say($('tmMsg'), x.ok ? '✔ take no ar em loop — ⏹ pra tirar' : x.error, x.ok);
+    }));
+  }
+  $('tmNovo').onclick = async () => {
+    const t = (window.prompt('Nome do novo tema (ex: Vestiário, Torcida, Bastidores) — os patrocinadores já são temas') || '').trim();
+    if (!t) return;
+    const x = await api('/api/cine/temas/novo', { nome: t });
+    say($('tmMsg'), x.ok ? `✔ tema "${x.nome}" criado — já aparece na câmera dos cinegrafistas` : x.error, x.ok);
+    tmLoad();
+  };
+  $('tmSair').onclick = async () => { const x = await api('/api/cine/takes/sair', {}); say($('tmMsg'), x.ok ? '✔ voltou pro jogo' : x.error, x.ok); };
+
+  /* ── VÍDEO DO YOUTUBE ── */
+  async function ytLoad() { const r = await api('/api/ytela'); if (r.ok && r.link && !$('ytLink').value) $('ytLink').value = r.link; }
+  $('ytCheia').onclick = async () => { const r = await api('/api/ytela', { link: $('ytLink').value }); say($('ytMsg'), r.ok ? '✔ vídeo no ar (tela cheia, com som)' : r.error, r.ok); };
+  $('ytDiv').onclick = async () => {
+    const l = await api('/api/ytela/link', { link: $('ytLink').value });
+    if (!l.ok) return say($('ytMsg'), l.error, false);
+    const r = await api('/api/dividida', { fonte: 'youtube' });
+    const st2 = await api('/api/dividida');
+    say($('ytMsg'), r.ok ? (st2.on ? '✔ vídeo + jogo no ar (toque de novo pra sair)' : '✔ voltou pro jogo') : r.error, r.ok);
+  };
+  $('ytSair').onclick = async () => {
+    const st2 = await api('/api/dividida');
+    const r = st2.on && st2.fonte === 'youtube' ? await api('/api/dividida', { fonte: 'youtube' }) : await api('/api/ytela/sair', {});
+    say($('ytMsg'), r.ok ? '✔ voltou pro jogo' : r.error, r.ok);
+  };
+
+  /* ── COMENTÁRIOS DO YOUTUBE ── */
+  async function ytcLoad() {
+    const r = await api('/api/ytchat');
+    if (!r.ok) return;
+    $('ytcCanto').checked = r.modo === 'canto';
+    $('ytcInfo').textContent = !r.videoId ? '⚠ salve o link da transmissão do YouTube deste jogo (painel do PC → YouTube)' : r.erro ? `⚠ ${r.erro}` : `${r.msgs.length ? 'últimos comentários:' : 'nenhum comentário ainda'}`;
+    $('ytcLista').innerHTML = r.msgs.slice(0, 8).map((m) => `<div class="ytcMsg"><span><b>${m.autor.replace(/</g, '&lt;')}</b> ${m.texto.replace(/</g, '&lt;')}</span></div>`).join('');
+  }
+  setInterval(() => { if (tab === 'tl') ytcLoad(); }, 4000);
+  $('ytcCanto').onchange = async (e) => { const r = await api('/api/ytchat/modo', { modo: e.target.checked ? 'canto' : 'off' }); say($('tlMsg'), r.ok ? (r.modo === 'canto' ? '✔ comentários no canto da tela' : '✔ comentários fora da tela') : r.error, r.ok); ytcLoad(); };
+
+  /* ── OVERLAYS: tarjas ── */
+  var ovTipo = 'nome', ovEditando = '';
+  const OV_PH = { nome: ['nome de quem aparece', 'embaixo: cargo / time (opcional)'], instagram: ['@ do instagram', 'embaixo: texto (opcional, ex: SIGA A COPA)'], texto: ['texto', 'embaixo (opcional)'] };
+  const ovSetTipo = (t) => { ovTipo = t; document.querySelectorAll('[data-ovt]').forEach((b) => b.classList.toggle('on', b.dataset.ovt === t)); $('ovTit').placeholder = OV_PH[t][0]; $('ovSub').placeholder = OV_PH[t][1]; ovLoad(); };
+  document.querySelectorAll('[data-ovt]').forEach((b) => (b.onclick = () => ovSetTipo(b.dataset.ovt)));
+  const ovIc = { nome: '👤', instagram: '📸', texto: '💬' };
+  async function ovLoad() {
+    const r = await api('/api/tarjas');
+    if (!r.ok) return;
+    const OV_NOME = { nome: 'nomes', instagram: 'instagrams', texto: 'textos' };
+    const lista = r.lista.filter((t) => t.tipo === ovTipo);
+    $('ovListaTit').textContent = `${OV_NOME[ovTipo]} salvos`;
+    $('ovLista').innerHTML = lista.length ? lista.map((t) => `<div class="ovItem ${r.noAr === t.id ? 'on' : ''}"><span class="t">${ovIc[t.tipo]} ${t.tipo === 'instagram' ? '@' : ''}${t.titulo.replace(/</g, '&lt;')}${t.sub ? `<small>${t.sub.replace(/</g, '&lt;')}</small>` : ''}</span><button data-ove="${t.id}">✎</button><button data-ovx="${t.id}">✕</button><button class="air" data-ovm="${t.id}">${r.noAr === t.id ? '● NO AR' : '▶'}</button></div>`).join('')
+      : `<div class="hint">nenhum ${ovTipo === 'instagram' ? '@' : ovTipo} salvo ainda — salve os que vai usar de novo</div>`;
+    $('ovLista').querySelectorAll('[data-ovm]').forEach((b) => (b.onclick = async () => {
+      const on = b.textContent.includes('NO AR');
+      const x = on ? await api('/api/tarjas/tirar', {}) : await api('/api/tarjas/mostrar', { id: b.dataset.ovm, segundos: Number($('ovSeg').value) });
+      say($('ovMsg'), x.ok ? (on ? '✔ saiu da tela' : '✔ tarja no ar') : x.error, x.ok);
+      if (navigator.vibrate) navigator.vibrate(40);
+      ovLoad();
+    }));
+    $('ovLista').querySelectorAll('[data-ove]').forEach((b) => (b.onclick = () => {
+      const t = r.lista.find((x) => x.id === b.dataset.ove);
+      if (!t) return;
+      ovEditando = t.id; ovSetTipo(t.tipo); $('ovTit').value = t.titulo; $('ovSub').value = t.sub || '';
+      say($('ovMsg'), 'editando — toque 💾 salvar', true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }));
+    $('ovLista').querySelectorAll('[data-ovx]').forEach((b) => (b.onclick = async () => {
+      if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'apagar?'; setTimeout(() => { b.dataset.armed = ''; b.textContent = '✕'; }, 3000); return; }
+      await api('/api/tarjas/apagar', { id: b.dataset.ovx }); ovLoad();
+    }));
+  }
+  setInterval(() => { if (tab === 'ov') ovLoad(); }, 3000);
+  $('ovAr').onclick = async () => {
+    const r = await api('/api/tarjas/mostrar', { tipo: ovTipo, titulo: $('ovTit').value, sub: $('ovSub').value, segundos: Number($('ovSeg').value) });
+    say($('ovMsg'), r.ok ? '✔ tarja no ar' : r.error, r.ok);
+    if (navigator.vibrate) navigator.vibrate(40);
+    ovLoad();
+  };
+  $('ovSalvar').onclick = async () => {
+    const r = await api('/api/tarjas/salvar', { id: ovEditando || undefined, tipo: ovTipo, titulo: $('ovTit').value, sub: $('ovSub').value });
+    say($('ovMsg'), r.ok ? '✔ salva — fica na lista pros próximos jogos' : r.error, r.ok);
+    if (r.ok) { ovEditando = ''; $('ovTit').value = ''; $('ovSub').value = ''; }
+    ovLoad();
+  };
+  $('ovTirar').onclick = async () => { await api('/api/tarjas/tirar', {}); say($('ovMsg'), '✔ saiu da tela', true); ovLoad(); };
+  $('tabVr').onclick = () => showTab('vr');
   $('tabTb').onclick = () => showTab('tb');
   $('tabDr').onclick = () => showTab('dr');
 
@@ -1454,7 +2001,7 @@
   }
   $('escGear').onclick = () => {
     const f = $('escFrame');
-    if (!f.src) f.src = 'painel/?only=escalacao&v=mvx8pdye';
+    if (!f.src) f.src = 'painel/?only=escalacao&v=mvxu0dnp';
     $('escSheet').style.display = 'flex';
   };
   $('escSheetClose').onclick = async () => { $('escSheet').style.display = 'none'; await loadState(); paintEsc(); };
@@ -1620,6 +2167,67 @@
     }));
   }
   setInterval(() => { if (tab === 'sc') paintSc(); }, 1000);
+
+  /* ── ⚙ CRONÔMETRO ── */
+  var rlEst = null, rlAt = 0;
+  const rlFmt = (ms) => { const t = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; };
+  async function rlLoad() { const r = await api('/api/relogio'); if (r.ok) { rlEst = r; rlAt = performance.now(); } }
+  setInterval(() => {
+    if (tab !== 'sc' || $('rlBox').classList.contains('hidden') || !rlEst) return;
+    const ms = rlEst.ms + (rlEst.running ? performance.now() - rlAt : 0);
+    $('rlTv').textContent = rlEst.period === 'PRE' ? 'não começou' : rlFmt(ms);
+    $('rlPlay').textContent = rlEst.running ? '⏸ pausar' : '▶ continuar';
+  }, 250);
+  const rlAcao = async (body, okMsg) => {
+    const r = await api('/api/relogio', body);
+    say($('rlMsg'), r.ok ? okMsg : r.error, r.ok);
+    if (navigator.vibrate) navigator.vibrate(40);
+    await rlLoad(); loadState();
+  };
+  $('scGear').onclick = async () => { $('rlBox').classList.toggle('hidden'); await rlLoad(); };
+  $('rlFechar').onclick = () => $('rlBox').classList.add('hidden');
+  $('rlPlay').onclick = () => rlAcao({ acao: rlEst?.running ? 'pause' : 'start' }, rlEst?.running ? '✔ cronômetro pausado' : '✔ cronômetro andando');
+  $('rlSet').onclick = () => {
+    const m = Number($('rlMin').value || 0), s = Number($('rlSeg').value || 0);
+    if (!Number.isFinite(m) || !Number.isFinite(s) || s > 59) return say($('rlMsg'), 'tempo inválido (ex: 23 : 10)', false);
+    rlAcao({ acao: 'set', ms: (m * 60 + s) * 1000 }, `✔ cronômetro em ${rlFmt((m * 60 + s) * 1000)}`);
+    $('rlMin').value = ''; $('rlSeg').value = '';
+  };
+  document.querySelectorAll('[data-rl]').forEach((b) => (b.onclick = () => rlAcao({ acao: 'somar', ms: Number(b.dataset.rl) }, `✔ ${b.textContent}`)));
+
+  /* ── GOLS DO JOGO (autor do gol) ── */
+  async function glLoad() {
+    const r = await api('/api/artilheiro');
+    if (!r.ok || !st) return;
+    const gols = r.gols || [];
+    const stTxt = (g) => g.estado === 'mostrado' ? '✔ animação já passou'
+      : g.semAutor ? '<span class="sem">⚠ sem autor — diga quem fez</span>'
+      : g.estado === 'esperando-replay' ? '⏳ esperando o replay do gol'
+      : g.leftSec ? `⏳ entra em ${g.leftSec} s` : `⏳ esperando a tela ficar livre${r.esperandoTela ? ` (${r.esperandoTela})` : ''}`;
+    $('glLista').innerHTML = gols.length ? gols.map((g) => `
+      <div class="glRow">
+        <span class="glMin" style="color:${st.teams[g.team]?.color || '#33e02a'}">${(g.minute || '').split(' ')[0] || '—'}</span>
+        <span class="glNm">${g.semAutor ? '<span class="sem">quem fez?</span>' : `${g.number ? g.number + ' ' : ''}${g.player}`} · ${short(st.teams[g.team] || {})}<small>${stTxt(g)}</small></span>
+        <button data-glquem="${g.id}" data-team="${g.team}">${g.semAutor ? '⚽ quem fez?' : '✎'}</button>
+        ${g.semAutor ? '' : `<button class="air" data-glagora="${g.id}">${g.estado === 'mostrado' ? '↻ de novo' : '▶ agora'}</button>`}
+      </div>`).join('') : '<div class="hint">nenhum gol ainda</div>';
+    $('glLista').querySelectorAll('[data-glquem]').forEach((b) => (b.onclick = async () => {
+      const side = b.dataset.team;
+      const pl = await playersOf(side);
+      const p = await pickPlayer(`⚽ Quem fez o gol do ${short(st.teams[side])}?`, 'o nome entra na animação do autor e na lista de gols', side, null, [['TITULARES', pl.starters], ['RESERVAS', pl.reserves], ['ELENCO (fora da escalação)', pl.extra || []]]);
+      if (!p) return;
+      const x = await api(`/api/artilheiro/${b.dataset.glquem}`, { player: p.name, number: p.number });
+      say($('glMsg'), x.ok ? `✔ gol de ${p.number ? p.number + ' ' : ''}${p.name}` : x.error, x.ok);
+      glLoad();
+    }));
+    $('glLista').querySelectorAll('[data-glagora]').forEach((b) => (b.onclick = async () => {
+      const x = await api(`/api/artilheiro/${b.dataset.glagora}`, { now: true });
+      say($('glMsg'), x.ok ? '✔ a animação do autor entra agora (espera só o replay sair, se estiver no ar)' : x.error, x.ok);
+      if (navigator.vibrate) navigator.vibrate(40);
+      glLoad();
+    }));
+  }
+  setInterval(() => { if (tab === 'sc') glLoad(); }, 2500);
   $('stopToggle').onclick = () => { $('stopBox').classList.toggle('hidden'); paintSc(); };
   const fire = async (ev, okMsg) => {
     const r = await api('/api/match/event', ev);
@@ -1703,13 +2311,14 @@
     $('goalAnim').classList.remove('on');
     const pl = await playersOf(side);
     const p = await pickPlayer(`⚽ Quem fez o gol do ${name}?`, 'o nome entra na animação do autor (logo depois do replay) e na lista de gols', side, null, [['TITULARES', pl.starters], ['RESERVAS', pl.reserves], ['ELENCO (fora da escalação)', pl.extra || []]]);
-    if (!p) { say($('scMsg'), '✔ gol marcado — dá pra dizer o autor depois no painel (cartão Autor do gol)', true); return; }
+    if (!p) { say($('scMsg'), '✔ gol marcado — diga o autor depois aqui embaixo (Gols do jogo)', true); glLoad(); return; }
     // o gol que acabou de entrar na fila do autor (o último desse time)
     const a = await api('/api/artilheiro');
     const item = (a.pending || []).filter((x) => x.team === side).pop();
     if (!item) { say($('scMsg'), `✔ gol de ${p.name} (a animação do autor está desligada no painel)`, true); return; }
     const u = await api(`/api/artilheiro/${item.id}`, { player: p.name, number: p.number });
     say($('scMsg'), u.ok ? `✔ gol de ${p.number ? p.number + ' ' : ''}${p.name}` : (u.error || 'não deu certo'), u.ok);
+    glLoad();
   }
   $('scHomeGoal').onclick = () => goalFlow('home');
   $('scAwayGoal').onclick = () => goalFlow('away');
@@ -1812,7 +2421,7 @@
     if (mode === 'air' && now > rv.airUntil) mode = rv.mode = 'idle';
     if (rv.msg && now > rv.msgUntil) rv.msg = '';
     b.className = 'repBtn' + (mode === 'idle' ? '' : ' ' + mode);
-    if (mode === 'saving') { big.textContent = 'GRAVANDO…'; sub.textContent = 'segure o celular'; arc.style.strokeDashoffset = ''; }
+    if (mode === 'saving') { big.textContent = 'SALVANDO…'; sub.textContent = 'pode mexer no app'; arc.style.strokeDashoffset = ''; }
     else if (mode === 'wait') {
       const left = Math.max(0, rv.airAt - now);
       big.textContent = String(Math.ceil(left / 1000));
@@ -1860,6 +2469,7 @@
       $('repWarn').textContent = '⚠ o último replay saiu COM PLACAR: a câmera limpa não estava gravando. Avise o diretor (painel → câmeras gravando).';
       fillSel($('repTail'), [6, 8, 10, 12, 15, 20, 25, 30], r.tailSec, (v) => `${v} segundos`);
       fillSel($('repAir'), [0, 5, 10, 15, 20, 25, 30, 45, 60], r.airSec, (v) => (v ? `${v} s depois` : 'não — só salva (o diretor põe)'));
+      if (document.activeElement !== $('repDiv')) $('repDiv').checked = !!r.dividida;
       $('repHint').textContent = r.airSec > 0
         ? `Toque = grava. Ele entra no ar sozinho em ${r.airSec} s — na contagem: toque de novo = vai JÁ · segure = cancela.`
         : 'O replay fica salvo — o diretor põe no ar pelo painel.';
@@ -1893,6 +2503,7 @@
     el.innerHTML = vals.map((v) => `<option value="${v}"${v === cur ? ' selected' : ''}>${fmt(v)}</option>`).join('');
   };
   $('repTail').onchange = async (e) => { const r = await api('/api/replay/tail', { seconds: Number(e.target.value) }); say($('repMsg'), r.ok ? '✔ duração salva' : r.error, r.ok); pollRep(); };
+  $('repDiv').onchange = async (e) => { const r = await api('/api/replay/phone/cfg', { dividida: e.target.checked }); say($('repMsg'), r.ok ? (r.dividida ? '✔ o replay entra do lado do jogo' : '✔ o replay entra em tela cheia') : r.error, r.ok); };
   $('repAir').onchange = async (e) => { const r = await api('/api/replay/phone/cfg', { airSec: Number(e.target.value) }); say($('repMsg'), r.ok ? '✔ salvo' : r.error, r.ok); pollRep(); };
 
   /* BOTÃO ÚNICO: toque = grava · na contagem: toque = vai pro ar JÁ · segure 1 s = cancela */
@@ -2278,17 +2889,41 @@
   $('cqReset').onclick = async () => {
     if ($('cqReset').dataset.armed !== '1') {
       $('cqReset').dataset.armed = '1';
-      $('cqReset').textContent = 'toque de novo pra ZERAR os votos';
-      setTimeout(() => { $('cqReset').dataset.armed = ''; $('cqReset').textContent = 'zerar votação'; }, 3000);
+      $('cqReset').textContent = 'toque de novo pra começar outra votação';
+      setTimeout(() => { $('cqReset').dataset.armed = ''; $('cqReset').textContent = 'nova votação (os eleitos continuam salvos)'; }, 3000);
       return;
     }
     $('cqReset').dataset.armed = '';
-    $('cqReset').textContent = 'zerar votação';
+    $('cqReset').textContent = 'nova votação (os eleitos continuam salvos)';
     await api('/api/craque/zerar', {});
     await loadState();
     paintCq();
   };
-  function pollCq() { clearTimeout(cqTimer); loadState().then(paintCq); if (tab === 'cq') cqTimer = setTimeout(pollCq, 2000); }
+  async function cqEleitos() {
+    const r = await api('/api/craque');
+    if (!r.ok) return;
+    const face = (u) => (u || '').replace(/^\/?(players|coaches)\//, 'rostos/$1/');
+    const noAr = r.craque?.on && r.craque?.phase === 'vencedor' ? r.craque.winnerId : '';
+    $('cqEleitos').innerHTML = (r.eleitos || []).length ? r.eleitos.map((e) => `
+      <div class="cqRow ${noAr === e.id ? 'lead' : ''}">
+        <span class="ph" style="${e.photo ? `background-image:url('${face(e.photo)}')` : ''}">${e.photo ? '' : (e.number ?? '?')}</span>
+        <span class="nm">${e.number != null ? e.number + ' ' : ''}${e.name} · ${short(st?.teams?.[e.team] || {})}</span>
+        <button data-cqapaga="${e.id}" title="tirar da lista">✕</button>
+        <button class="plus" data-cqmostra="${e.id}">${noAr === e.id ? '● NO AR' : '▶ mostrar'}</button>
+      </div>`).join('') : '<div class="hint">nenhum ainda — quem for revelado fica salvo aqui</div>';
+    $('cqEleitos').querySelectorAll('[data-cqmostra]').forEach((b) => (b.onclick = async () => {
+      const on = noAr === b.dataset.cqmostra;
+      const x = on ? await api('/api/craque/mostrar', { on: false }) : await api('/api/craque/eleito/mostrar', { id: b.dataset.cqmostra });
+      say($('cqMsg'), x.ok ? (on ? '✔ saiu da tela' : '🏆 craque na tela') : x.error, x.ok);
+      await loadState(); paintCq(); cqEleitos();
+    }));
+    $('cqEleitos').querySelectorAll('[data-cqapaga]').forEach((b) => (b.onclick = async () => {
+      if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'apagar?'; setTimeout(() => { b.dataset.armed = ''; b.textContent = '✕'; }, 3000); return; }
+      await api('/api/craque/eleito/apagar', { id: b.dataset.cqapaga });
+      cqEleitos();
+    }));
+  }
+  function pollCq() { clearTimeout(cqTimer); loadState().then(paintCq); cqEleitos(); if (tab === 'cq') cqTimer = setTimeout(pollCq, 2000); }
 
   /* ══════════ PATROCÍNIO: botão com a logo → tela do patrocínio (animação); de novo → volta pro jogo ══════════ */
   var ptTimer = 0;
@@ -2334,9 +2969,17 @@
     if (!r.ok) { $('tbTable').innerHTML = `<div class="hint">${r.error || 'sem a tabela agora'}</div>`; return; }
     const gs = r.groups || [];
     if (!gs.some((g) => g.name === tbGrupo)) tbGrupo = gs[0]?.name || '';
+    // começou o mata-mata: abre nele uma vez (não faz sentido a tabela dos grupos agora)
+    try { if (gs[0]?.name === 'MATA-MATA' && !localStorage.getItem('aranas.equipe.mmvisto')) { tbGrupo = 'MATA-MATA'; localStorage.setItem('aranas.equipe.mmvisto', '1'); } } catch { /* */ }
     $('tbGrupos').innerHTML = gs.length > 1 ? gs.map((g) => `<button data-g="${g.name}" class="${g.name === tbGrupo ? 'on' : ''}">${g.name.toUpperCase()}</button>`).join('') : '';
     $('tbGrupos').querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => { tbGrupo = b.dataset.g; try { localStorage.setItem('aranas.equipe.grupo', tbGrupo); } catch { /* */ } loadTb(); }));
     const g = gs.find((x) => x.name === tbGrupo) || gs[0] || { rows: r.table || [] };
+    if (g.name === 'MATA-MATA' && r.chave) {
+      const tm = (t) => `<span class="${t.win ? 'mmWin' : ''}">${t.logo ? `<img src="${t.logo}" alt="">` : ''}${(t.short || t.name).toUpperCase()}${t.score != null ? ` <b>${t.score}</b>` : ''}</span>`;
+      $('tbTable').innerHTML = r.chave.map((f) => `<div class="mmFase">${f.nome}</div>` + f.jogos.map((j) => `<div class="mmJogo">${tm(j.home)}<i>×</i>${tm(j.away)}<small>${j.aoVivo ? '● AO VIVO' : j.penaltis ? 'pênaltis' : j.quando || ''}</small></div>`).join('')).join('')
+        + (r.empates || []).map((e) => `<div class="mmEmp"><div>${e.home} ${e.placar} ${e.away} — <b>quem passou nos pênaltis?</b></div><div class="row" style="margin-top:6px"><button data-pen="${e.id}" data-s="home" class="${e.passou === 'home' ? 'on' : ''}">${e.home}</button><button data-pen="${e.id}" data-s="away" class="${e.passou === 'away' ? 'on' : ''}">${e.away}</button></div></div>`).join('');
+      $('tbTable').querySelectorAll('[data-pen]').forEach((b) => (b.onclick = async () => { await api('/api/tabela/vencedor', { id: b.dataset.pen, side: b.dataset.s }); say($('tbMsg'), '✔ salvo — o chaveamento já mostra quem passou', true); loadTb(); }));
+    } else
     $('tbTable').innerHTML = `<div class="tbRow tbHead"><span>#</span><span></span><span>TIME</span><span>P</span><span>J</span><span>V</span><span>SG</span></div>` +
       g.rows.map((t, i) => `<div class="tbRow ${t.live ? 'live' : ''}"><span class="pos">${i + 1}</span><span class="lg">${t.logo ? `<img src="${t.logo}" alt="">` : ''}</span><span class="nm">${(t.short || t.name).toUpperCase()}${t.live ? ' <i>AO VIVO</i>' : ''}</span><b>${t.pts}</b><span>${t.j}</span><span>${t.v}</span><span>${t.sg > 0 ? '+' + t.sg : t.sg}</span></div>`).join('');
     $('tbShow').textContent = `📺 MOSTRAR ${(g.name || 'A TABELA').toUpperCase()} NA TELA`;
