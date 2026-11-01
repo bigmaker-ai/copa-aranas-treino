@@ -3,6 +3,15 @@
    - os toques que no jogo mandariam algo pro PC só mostram um aviso do que aconteceria */
 (function () {
   const D = window.__DEMO_DADOS || {};
+  const PAINEL = !!window.__DEMO_PAINEL;
+  // a raiz do site (onde está o demo.js): o painel monta foto/escudo como <servidor> + /logos/… → o "servidor" é o site
+  const RAIZ = (document.currentScript && document.currentScript.src || location.href).replace(/\/demo\.js.*$/, '');
+  try { localStorage.setItem('aranas.serverBase', RAIZ); } catch (e) { /* */ }
+  // no painel os caminhos são absolutos (/logos/x.png), no app relativos (logos/x.png)
+  const ABS = /^(logos|sponsors-arte|sponsors|marca|competition|mascote|ui|app-icon)\//;
+  const absoluto = (o) => Array.isArray(o) ? o.map(absoluto) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, absoluto(v)])) : typeof o === 'string' && ABS.test(o) ? '/' + o
+    // foto do jogador: só a versão pequena (rosto) está no site
+    : typeof o === 'string' && /^\/?(players|coaches)\//.test(o) ? o.replace(/^\/?(players|coaches)\//, '/rostos/$1/') : o;
   let estado = window.__DEMO_ESTADO || {};
 
   // já entra como "Aprendiz" (pula o "Quem é você?") e não oferece instalar
@@ -71,6 +80,7 @@
     try { corpo = init && init.body ? JSON.parse(init.body) : {}; } catch (e) { /* */ }
     let r;
     if (metodo === 'GET') r = D[p + url.search] || D[p] || { ok: true };
+    if (PAINEL) r = absoluto(r);
     else {
       efeito(p, corpo);
       const t = oQue(p);
@@ -84,12 +94,13 @@
 
   /* ── WebSocket: entrega o estado do placar e não manda nada ── */
   const abertos = [];
-  function manda() { for (const w of abertos) if (w.onmessage) w.onmessage({ data: JSON.stringify({ type: 'state:snapshot', state: estado }) }); }
+  function manda() { const e = PAINEL ? absoluto(estado) : estado; for (const w of abertos) if (w.onmessage) w.onmessage({ data: JSON.stringify({ type: 'state:snapshot', state: e }) }); }
   class WSDemo {
     constructor() {
       this.readyState = 0;
       abertos.push(this);
       setTimeout(() => { this.readyState = 1; if (this.onopen) this.onopen({}); manda(); }, 300);
+      this.url = 'ws://treino';
     }
     send() { /* treino: não envia */ }
     close() { this.readyState = 3; }
@@ -136,6 +147,7 @@
 
   /* ── faixa fixa: deixa claro que é treino ── */
   document.addEventListener('DOMContentLoaded', () => {
+    if (PAINEL) return; // dentro do app a faixa já aparece
     const f = document.createElement('div');
     f.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99998;background:#f5c518;color:#1a1300;text-align:center;font:800 13px/1 Inter,system-ui,sans-serif;padding:12px 8px calc(12px + env(safe-area-inset-bottom));letter-spacing:.3px';
     f.innerHTML = '🎓 MODO TREINO — pode tocar em tudo, nada vai pra transmissão';

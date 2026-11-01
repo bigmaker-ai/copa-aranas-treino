@@ -1454,7 +1454,7 @@
   }
   $('escGear').onclick = () => {
     const f = $('escFrame');
-    if (!f.src) f.src = '/painel/?only=escalacao';
+    if (!f.src) f.src = 'painel/?only=escalacao';
     $('escSheet').style.display = 'flex';
   };
   $('escSheetClose').onclick = async () => { $('escSheet').style.display = 'none'; await loadState(); paintEsc(); };
@@ -1665,7 +1665,7 @@
       $('pickTitle').textContent = title;
       $('pickSub').textContent = sub || '';
       // foto com o ROSTO no centro (/rostos/…; o servidor cai na original se faltar)
-      const face = (u) => u.replace(/^\/?(players|coaches)\//, '/rostos/$1/');
+      const face = (u) => u.replace(/^\/?(players|coaches)\//, 'rostos/$1/');
       const card = (p, i) => `<button class="pl" data-i="${i}" data-q="${nrm((p.name || '') + ' ' + (p.full || '') + ' ' + (p.number ?? ''))}|${p.number ?? ''}"><span class="ph" style="${p.photo ? `background-image:url('${face(p.photo)}')` : ''}">${p.photo ? '' : (p.number ?? '?')}</span><span class="nm">${p.name || '—'}</span><span class="num">${p.number != null ? 'nº ' + p.number : ''}</span></button>`;
       let html = '', i = 0;
       for (const [label, arr] of sections || [['', list]]) {
@@ -2231,7 +2231,7 @@
     const list = [...(cq.cands || [])].sort((a, b) => b.votes - a.votes);
     const max = list[0]?.votes || 0;
     const solo = list.filter((x) => x.votes === max).length === 1;
-    const face = (u) => (u || '').replace(/^\/?(players|coaches)\//, '/rostos/$1/');
+    const face = (u) => (u || '').replace(/^\/?(players|coaches)\//, 'rostos/$1/');
     $('cqList').innerHTML = list.length ? list.map((c) => `
       <div class="cqRow ${c.votes === max && solo ? 'lead' : ''}">
         <span class="ph" style="${c.photo ? `background-image:url('${face(c.photo)}')` : ''}">${c.photo ? '' : (c.number ?? '?')}</span>
