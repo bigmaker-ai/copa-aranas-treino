@@ -1,0 +1,2526 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<script src="demo-dados.js"></script>
+<script src="demo.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0c1512" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Copa Aranãs" />
+<!-- ícone na tela inicial do celular (abre direto, sem QR code) -->
+<link rel="manifest" href="movel.webmanifest" />
+<link rel="apple-touch-icon" href="app-icon/apple-touch-icon.png" />
+<link rel="icon" href="app-icon/icon-192.png" />
+<title>Copa Aranãs · Treino do app</title>
+<!--
+  CELULAR DA EQUIPE: "PÔR MINHA CÂMERA NO AR" (ATEM ou câmera sem fio no OBS), VOLTAR,
+  luz de no ar, MARCAR LANCE e INTERCOM (fone + microfone, segure pra falar).
+  Abra pelo link https (o celular só libera o microfone em conexão segura).
+-->
+<style>
+  @font-face { font-family: 'Anton'; src: url(ui/fonts/anton.woff2) format('woff2'); font-display: swap; }
+  @font-face { font-family: 'Inter'; src: url(ui/fonts/inter.woff2) format('woff2'); font-weight: 100 900; font-display: swap; }
+  /* ── app da equipe: escuro, liso, ícones de traço (Lucide), fonte do placar (Anton) nos números ── */
+  :root {
+    --bg:#090c0b; --s1:#101513; --s2:#151c19; --s3:#1b2420; --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.12);
+    --text:#edf3ef; --muted:#7f8e86; --dim:#56635c;
+    --green:#3be33b; --green-d:#0f2a12; --red:#ff453a; --red-d:#2a0f0d; --amber:#ffb020; --amber-d:#2b2108; --blue:#4fb3ff; --blue-d:#0d2133; --violet:#b48cff;
+    --r:18px; --top:58px;
+    --disp: 'Anton', Impact, 'Arial Narrow', sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text);
+    font: 500 15px/1.4 'Inter', -apple-system, 'Segoe UI', Roboto, system-ui, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -.1px; }
+  body { padding: 0 16px calc(28px + env(safe-area-inset-bottom)); transition: box-shadow .2s; }
+  body.onair { box-shadow: inset 0 0 0 6px var(--red); }
+  body.preview { box-shadow: inset 0 0 0 4px var(--green); }
+  .hidden { display: none !important; }
+
+  /* ícones (Lucide, pintados na cor do texto) */
+  [data-ic]::before { content: ''; display: inline-block; width: 20px; height: 20px; flex: none; background: currentColor;
+    -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; }
+  [data-ic="replay"] { --m: url(ui/icons/history.svg); }
+  [data-ic="placar"] { --m: url(ui/icons/goal.svg); }
+  [data-ic="telas"] { --m: url(ui/icons/monitor-play.svg); }
+  [data-ic="musica"] { --m: url(ui/icons/music.svg); }
+  [data-ic="esc"] { --m: url(ui/icons/list-ordered.svg); }
+  [data-ic="trocas"] { --m: url(ui/icons/arrow-left-right.svg); }
+  [data-ic="cam"] { --m: url(ui/icons/headphones.svg); }
+  [data-ic="settings"] { --m: url(ui/icons/settings.svg); }
+  [data-ic="folder"] { --m: url(ui/icons/folder.svg); }
+  [data-ic="play"] { --m: url(ui/icons/play.svg); }
+  [data-ic="pause"] { --m: url(ui/icons/pause.svg); }
+  [data-ic="stop"] { --m: url(ui/icons/square.svg); }
+  [data-ic="next"] { --m: url(ui/icons/skip-forward.svg); }
+  [data-ic="shuffle"] { --m: url(ui/icons/shuffle.svg); }
+  [data-ic="vol"] { --m: url(ui/icons/volume-2.svg); }
+  [data-ic="pc"] { --m: url(ui/icons/monitor.svg); }
+  [data-ic="mic"] { --m: url(ui/icons/mic.svg); }
+  [data-ic="flag"] { --m: url(ui/icons/flag.svg); }
+  [data-ic="x"] { --m: url(ui/icons/x.svg); }
+  [data-ic="minus"] { --m: url(ui/icons/minus.svg); }
+  [data-ic="timer"] { --m: url(ui/icons/timer.svg); }
+  [data-ic="hourglass"] { --m: url(ui/icons/hourglass.svg); }
+  [data-ic="coffee"] { --m: url(ui/icons/coffee.svg); }
+  [data-ic="tag"] { --m: url(ui/icons/tag.svg); }
+  [data-ic="mascote"] { --m: url(ui/icons/smile.svg); }
+  .msGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .msCard { background: var(--card, #111); border: 1px solid #2a3340; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+  .msCard.tocando { border-color: var(--green); box-shadow: 0 0 0 2px var(--green); }
+  .msPrev { position: relative; aspect-ratio: 16/9; background: #1c2530; }
+  .msPrev img, .msPrev video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .msPrev .play { position: absolute; left: 6px; top: 6px; background: rgba(0,0,0,.6); color: #fff; border-radius: 14px; padding: 2px 8px; font-size: 12px; }
+  .msNome { padding: 6px 8px 0; font-size: 14px; font-weight: 700; }
+  .msCard .air { margin: 6px 8px 0; width: calc(100% - 16px); min-height: 48px; box-sizing: border-box; }
+  .msCard label { display: flex; gap: 8px; align-items: center; padding: 6px 8px 8px; font-size: 13px; color: var(--muted); }
+  .msEspera { padding: 18px 8px; text-align: center; color: var(--muted); font-size: 13px; }
+  [data-ic="video"] { --m: url(ui/icons/video.svg); }
+  [data-ic="camera"] { --m: url(ui/icons/camera.svg); }
+  [data-ic="live"] { --m: url(ui/icons/radio.svg); }
+  [data-ic="film"] { --m: url(ui/icons/clapperboard.svg); }
+  [data-ic="drone"] { --m: url(ui/icons/drone.svg); }
+  [data-ic="copy"] { --m: url(ui/icons/copy.svg); }
+  [data-ic="pip"] { --m: url(ui/icons/picture-in-picture-2.svg); }
+  /* ── melhores momentos (status no app) ── */
+  .hlJogo { color: var(--muted); font-weight: 500; font-size: 12px; margin-left: 6px; }
+  .hlRow { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .hlInfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .hlInfo b { font: 400 18px/1 var(--disp); letter-spacing: .6px; }
+  .hlSt { font-size: 13px; color: var(--muted); }
+  .hlRow.ready .hlSt { color: var(--green); font-weight: 650; }
+  .hlRow.building .hlSt { color: var(--amber); font-weight: 650; }
+  .hlRow.error .hlSt { color: var(--red); }
+  .hlBar { display: none; height: 5px; border-radius: 3px; background: var(--s3); overflow: hidden; }
+  .hlBar i { display: block; height: 100%; width: 0; background: var(--amber); transition: width .5s; }
+  .hlRow.building .hlBar { display: block; }
+  .hlAir { flex: 0 0 96px; width: auto; min-height: 50px; font: 400 18px var(--disp) !important; letter-spacing: .6px; }
+  .hlRow.ready .hlAir { background: var(--red); border-color: var(--red); color: #fff; }
+  .hlAir:disabled { opacity: .35; }
+  /* ── CRAQUE DO JOGO ── */
+  .cqShow { background: var(--green) !important; border-color: var(--green) !important; color: #031a03 !important; }
+  .cqShow.on { background: var(--s3) !important; border-color: var(--line2) !important; color: var(--text) !important; }
+  .cqTeam { min-height: 64px; font: 400 22px var(--disp) !important; letter-spacing: .6px; }
+  .cqList { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .cqRow { display: flex; align-items: center; gap: 10px; background: var(--s2); border-radius: 14px; padding: 8px 10px; }
+  .cqRow.lead { box-shadow: inset 0 0 0 2px var(--green); }
+  .cqRow .ph { width: 48px; height: 48px; border-radius: 50%; background: var(--s3) center/cover; flex: none; display: grid; place-items: center; font: 400 20px var(--disp); }
+  .cqRow .nm { flex: 1; min-width: 0; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cqRow .vt { font: 400 30px var(--disp); min-width: 36px; text-align: center; }
+  .cqRow button { flex: 0 0 auto; width: auto; min-height: 48px; padding: 0 14px; font: 400 20px var(--disp) !important; }
+  .cqRow .plus { background: var(--green); border-color: var(--green); color: #031a03; }
+  .cqReveal { margin-top: 12px; background: linear-gradient(180deg, #ffd45a, #c8901a) !important; border-color: #ffd45a !important; color: #241800 !important; }
+  /* ── TABELA ── */
+  #tbGrupos { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
+  #tbGrupos:empty { display: none; }
+  .tbGrupos button.on { background: var(--s3); color: var(--text); }
+  .tbRow { display: grid; grid-template-columns: 22px 34px 1fr 34px 28px 28px 38px; align-items: center; gap: 6px; padding: 7px 2px; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .tbRow:last-child { border-bottom: 0; }
+  .tbRow > span:nth-child(n+4), .tbRow > b { text-align: center; }
+  .tbHead { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .6px; }
+  .tbRow .pos { font: 400 18px var(--disp); color: var(--muted); }
+  .tbRow:nth-child(2) .pos, .tbRow:nth-child(3) .pos { color: var(--green); }
+  .tbRow .lg img { width: 30px; height: 30px; object-fit: contain; display: block; }
+  .tbRow .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tbRow .nm i { font-style: normal; font-size: 10px; color: #fff; background: var(--red); padding: 1px 6px; border-radius: 6px; margin-left: 4px; }
+  .tbRow b { font: 400 20px var(--disp); }
+  .tbJogo { background: var(--s2); border-radius: 14px; padding: 10px 12px; margin-top: 8px; }
+  .tbPlac { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; font-weight: 700; }
+  .tbPlac span:last-child { text-align: right; }
+  .tbPlac b { font: 400 24px var(--disp); }
+  .tbJogo .row button { min-height: 48px; font-size: 14px; }
+  .tbMenos { margin-top: 6px; align-items: center; }
+  .tbMenos button { flex: 0 0 60px; min-height: 36px !important; }
+  .tbMenos .hint { flex: 1; text-align: center; margin: 0; }
+  /* ── PATROCÍNIO ── */
+  .ptState { background: var(--s1); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; font-size: 14px; color: var(--muted); text-align: center; }
+  .ptState.on { background: var(--red-d); border-color: var(--red); color: #ffb3ad; font-weight: 700; }
+  .ptGrid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .ptBtn { position: relative; aspect-ratio: 4.3 / 1; min-height: 0; padding: 0; border-radius: 16px; background: #0c1512; border: 2px solid var(--line2); display: grid; place-items: center; overflow: hidden; }
+  .ptBtn.claro { background: #f4f7f4; }
+  .ptBtn img { width: 100%; height: 100%; object-fit: contain; padding: 10px 16px; box-sizing: border-box; }
+  .ptBtn img.art { object-fit: cover; padding: 0; }
+  .ptBtn b { font: 400 20px var(--disp); letter-spacing: .5px; text-align: center; }
+  .ptBtn.claro b { color: #111; }
+  .ptBtn .ptAir { display: none; position: absolute; top: 6px; right: 8px; background: var(--red); color: #fff; font: 700 11px 'Inter'; padding: 3px 8px; border-radius: 8px; }
+  .ptBtn.on { border-color: var(--red); box-shadow: 0 0 0 3px var(--red), 0 0 22px rgba(255,69,58,.5); }
+  .ptBtn.on .ptAir { display: block; }
+  /* ── DRONE ── */
+  .dHealth { display: flex; align-items: center; gap: 12px; }
+  .dHealth .dot { width: 18px; height: 18px; border-radius: 50%; background: var(--red); box-shadow: 0 0 12px var(--red); flex: none; }
+  .dHealth.ok .dot { background: var(--green); box-shadow: 0 0 12px var(--green); }
+  .dHealth.fraca .dot { background: var(--amber); box-shadow: 0 0 12px var(--amber); }
+  .dHealth b { font: 400 22px/1.1 var(--disp); letter-spacing: .5px; display: block; }
+  .dHealth small { color: var(--muted); font-size: 13px; }
+  .dNums { margin-left: auto; text-align: right; font: 400 20px/1.1 var(--disp); }
+  .dNums + .dNums { margin-left: 10px; }
+  .dNums small { display: block; font: 600 11px 'Inter'; color: var(--muted); }
+  .dUrl { display: flex; gap: 8px; align-items: center; background: var(--s2); border-radius: 12px; padding: 10px 12px; font: 600 14px ui-monospace, Consolas, monospace; word-break: break-all; }
+  .dUrl span { flex: 1; }
+  .dUrl button { flex: none; width: auto; min-height: 40px; padding: 0 12px; }
+  .dBig { width: 100%; min-height: 74px !important; font: 400 26px var(--disp) !important; letter-spacing: 1px; }
+  .dBig.air { background: var(--red); border-color: var(--red); color: #fff; }
+  .dBig.air.on { background: var(--s3); border-color: var(--line2); color: var(--text); }
+  .dBig.rec.on { background: var(--red-d); border-color: var(--red); color: #ffb3ad; }
+  .dBig:disabled { opacity: .4; }
+  .dSplit { background: #0f2a12 !important; border-color: var(--green) !important; color: #b9f7b3 !important; }
+  .dSplit.on { background: var(--s3) !important; color: var(--text) !important; }
+  .dHint { color: var(--muted); font-size: 13px; margin-top: 8px; line-height: 1.45; }
+  #paneDr input[type=text] { width: 100%; background: var(--s2); color: var(--text); border: 1px solid var(--line2); border-radius: 12px; padding: 12px; font: 500 14px 'Inter'; }
+  [data-ic="down"] { --m: url(ui/icons/arrow-down.svg); }
+  [data-ic="up"] { --m: url(ui/icons/arrow-up.svg); }
+  [data-ic="bench"] { --m: url(ui/icons/armchair.svg); }
+  [data-ic="prev"] { --m: url(ui/icons/rewind.svg); }
+  [data-ic="all"] { --m: url(ui/icons/fast-forward.svg); }
+  [data-ic="check"] { --m: url(ui/icons/check.svg); }
+  [data-ic="presenter"] { --m: url(ui/icons/mic-vocal.svg); }
+  [data-ic="end"] { --m: url(ui/icons/flag-triangle-right.svg); }
+  [data-ic="trophy"] { --m: url(ui/icons/trophy.svg); }
+  [data-ic="users"] { --m: url(ui/icons/users.svg); }
+  [data-ic="phone"] { --m: url(ui/icons/smartphone.svg); }
+  [data-ic="plus"] { --m: url(ui/icons/plus.svg); }
+  [data-ic="out"] { --m: url(ui/icons/log-out.svg); }
+
+  /* topo + menu */
+  .top { position: sticky; top: 0; z-index: 40; margin: 0 -16px; padding: calc(10px + env(safe-area-inset-top)) 16px 8px; display: flex; align-items: center; gap: 12px;
+    background: rgba(9,12,11,.94); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+  .top .logo { width: 30px; height: 30px; border-radius: 9px; }
+  .top .ttl { flex: 1; min-width: 0; }
+  .top .ttl b { display: block; font: 400 19px/1 var(--disp); letter-spacing: .6px; }
+  .top .ttl small { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex: none; }
+  .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .avatar { width: 38px; height: 38px; min-height: 0; border-radius: 50%; padding: 0; flex: none; font: 400 17px var(--disp); background: var(--s3); border: 1px solid var(--line2); color: var(--text); }
+  .tabs { position: sticky; top: calc(var(--top) + env(safe-area-inset-top)); z-index: 39; display: flex; gap: 0; margin: 0 -16px 16px; padding: 0 4px;
+    background: rgba(9,12,11,.94); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-bottom: 1px solid var(--line);
+    flex-wrap: wrap; row-gap: 2px; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { flex: 0 0 16.666%; min-width: 0; width: auto; min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 5px; background: none; border: 0; border-radius: 0;
+    padding: 9px 2px 10px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: -.2px; position: relative; white-space: nowrap; }
+  .tabs button::before { width: 22px; height: 22px; }
+  .tabs button.on { color: var(--text); }
+  .tabs button.on::after { content: ''; position: absolute; left: 18%; right: 18%; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--green); }
+  body.embed .top, body.embed #tabEq, body.embed #paneEq, body.embed #pttBar, body.embed #btnWho { display: none !important; }
+  body.embed .tabs { top: 0; }
+
+  /* blocos */
+  .card { background: var(--s1); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; margin-bottom: 12px; }
+  .lbl { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .9px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .lbl small { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--dim); font-size: 12px; }
+  .lbl::before { width: 15px; height: 15px; }
+  .hint { font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .head .lbl { margin: 0; flex: 1; }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+  .msg { font-size: 14px; margin-top: 10px; color: #ff8a80; text-align: center; font-weight: 600; }
+  .msg:empty { display: none; }
+  .msg.ok { color: var(--green); }
+
+  /* botões */
+  button { font: inherit; font-size: 16px; font-weight: 650; color: var(--text); background: var(--s3); border: 1px solid var(--line); border-radius: 14px;
+    min-height: 54px; padding: 13px 16px; width: 100%; cursor: pointer; user-select: none; -webkit-user-select: none;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; transition: transform .08s, background .15s, border-color .15s; }
+  button[data-ic]::before { width: 22px; height: 22px; }
+  button:active { transform: scale(.975); }
+  button[disabled] { opacity: .35; }
+  .primary { background: var(--green); border-color: var(--green); color: #031a03; font-weight: 750; }
+  .air { background: var(--red); border-color: var(--red); color: #fff; font-weight: 750; font-size: 17px; min-height: 60px; }
+  .ghost { background: transparent; color: var(--muted); }
+  .back { margin-top: 10px; }
+  .gear { width: 40px; height: 40px; min-height: 40px; padding: 0; border-radius: 12px; flex: 0 0 auto; background: var(--s2); color: var(--muted); }
+  .gear.on { color: var(--green); border-color: rgba(59,227,59,.4); }
+  select, input[type=text] { width: 100%; font: inherit; color: var(--text); background-color: var(--s2); border: 1px solid var(--line); border-radius: 14px;
+    min-height: 52px; padding: 13px 14px; margin-bottom: 10px; -webkit-appearance: none; appearance: none; }
+  select { padding-right: 40px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 22px) 52%, calc(100% - 16px) 52%; background-size: 6px 6px; background-repeat: no-repeat; }
+  input[type=text]:focus, select:focus { outline: none; border-color: rgba(59,227,59,.55); }
+  input[type=range] { width: 100%; accent-color: var(--green); }
+  label.check { display: flex; align-items: center; gap: 10px; font-size: 15px; margin-top: 12px; color: var(--muted); }
+  label.check input { width: 20px; height: 20px; accent-color: var(--green); }
+  .warn { background: var(--amber-d); border: 1px solid rgba(255,176,32,.35); color: #ffd98a; border-radius: 14px; padding: 12px 14px; font-size: 14px; margin-bottom: 12px; }
+  .warn a { color: #fff; font-weight: 700; }
+  /* blocos de toque (estilo central de controle) */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tiles button { min-height: 66px; justify-content: flex-start; text-align: left; padding: 12px 14px; font-size: 16px; gap: 12px; line-height: 1.2; }
+  .tiles button::before { width: 24px; height: 24px; }
+  /* lista de uma coluna (Telas): tudo do mesmo tamanho, fácil de ler */
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .list button { min-height: 62px; justify-content: flex-start; padding: 12px 16px; font-size: 17px; gap: 14px; }
+  .list button::before { width: 24px; height: 24px; }
+  .list button.on::after { content: 'NO AR'; margin-left: auto; font-size: 11px; font-weight: 800; letter-spacing: .8px; padding: 4px 8px; border-radius: 6px; background: rgba(0,0,0,.22); }
+
+  /* boas-vindas */
+  .welcome { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 40px 4px 48px; }
+  .welcome .brand { text-align: center; margin-bottom: 34px; }
+  .welcome .brand img { width: 76px; height: 76px; border-radius: 22px; }
+  .welcome .brand h2 { margin: 18px 0 4px; font: 400 36px/1 var(--disp); letter-spacing: 1px; }
+  .welcome .brand p { margin: 0; color: var(--muted); }
+  .welcome .sec { font-size: 12px; font-weight: 700; letter-spacing: .9px; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+  .people { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+  .people button { justify-content: flex-start; gap: 14px; padding: 10px 14px; min-height: 62px; font-size: 16px; background: var(--s1); }
+  .people button::after { content: '›'; margin-left: auto; color: var(--dim); font-size: 24px; font-weight: 400; }
+  .people .ini { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font: 400 18px var(--disp); background: var(--green-d); color: var(--green); flex: none; }
+  .people .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .or { display: flex; align-items: center; gap: 12px; color: var(--dim); font-size: 13px; margin: 0 0 16px; }
+  .or::before, .or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  .welcome input[type=text] { font-size: 17px; min-height: 58px; }
+  .welcome .primary { min-height: 58px; font-size: 17px; }
+
+  /* intercom */
+  #pttBar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 55; background: rgba(9,12,11,.96); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--line); padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); display: flex; gap: 8px; overflow-x: auto; }
+  #pttBar button { flex: 0 0 auto; width: auto; padding: 14px 16px; font-size: 15px; touch-action: none; white-space: nowrap; }
+  #pttBar .all { flex: 1 0 auto; background: var(--green-d); border-color: rgba(59,227,59,.45); color: var(--green); }
+  #pttBar .all.talking { background: var(--green); color: #031a03; }
+  body.hasBar { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  .tally { text-align: center; font: 400 20px var(--disp); letter-spacing: 2px; padding: 12px; border-radius: 14px; margin-bottom: 12px; background: var(--s2); color: var(--muted); }
+  .tally.onair { background: var(--red); color: #fff; animation: pulse 1s infinite; }
+  .tally.preview { background: var(--green-d); color: var(--green); }
+  @keyframes pulse { 50% { opacity: .7; } }
+  .camMe { background: var(--blue-d); border-color: rgba(79,179,255,.35); color: #cfe9ff; min-height: 60px; }
+  .ptt { background: var(--green-d); border: 1px solid rgba(59,227,59,.45); color: var(--green); font-size: 19px; min-height: 96px; touch-action: none; border-radius: 22px; }
+  .ptt.talking { background: var(--green); color: #031a03; }
+  .peers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .peer { font-size: 13px; padding: 6px 12px; border-radius: 20px; background: var(--s2); border: 1px solid var(--line); }
+  .peer.talking { background: var(--green); color: #031a03; font-weight: 700; }
+  .peer.me { border-color: rgba(59,227,59,.5); }
+  .peer.private { background: #f5c518; color: #2a2000; font-weight: 700; }
+  .cfg { background: var(--s2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 0 0 14px; text-align: left; }
+  .cfg .lbl { margin: 6px 0 8px; }
+  .cfg select { background-color: var(--s3); }
+  .meter { height: 6px; border-radius: 6px; background: var(--s3); overflow: hidden; margin: -2px 0 12px; }
+  .meter i { display: block; height: 100%; width: 0; background: var(--green); transition: width .08s; }
+  .privs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .priv { width: auto; flex: 1 1 calc(50% - 8px); font-size: 15px; touch-action: none; }
+  .priv.talking { background: #f5c518; color: #2a2000; border-color: #f5c518; }
+  .priv.hearing { border-color: var(--green); box-shadow: 0 0 0 1px var(--green) inset; }
+  #atemRow { display: none !important; }
+
+  /* replay */
+  .repBtn { width: 210px; height: 210px; min-height: 0; border-radius: 50%; margin: 10px auto 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    background: var(--red); border: 0; color: #fff; padding: 0; position: relative; box-shadow: 0 0 0 10px var(--red-d), 0 20px 50px rgba(255,69,58,.28);
+    transition: background .25s, transform .15s; }
+  .repBtn small { font-size: 12px; letter-spacing: .5px; font-weight: 600; opacity: .9; position: relative; }
+  .repBtn .ring { position: absolute; inset: -14px; width: calc(100% + 28px); height: calc(100% + 28px); transform: rotate(-90deg); pointer-events: none; }
+  .repBtn .ring circle { fill: none; stroke-width: 5; }
+  .repBtn .ring .trk { stroke: transparent; }
+  .repBtn .ring .arc { stroke: transparent; stroke-linecap: round; stroke-dasharray: 301.6; stroke-dashoffset: 0; }
+  .repBtn #repBig { position: relative; font: 400 34px/1 var(--disp); letter-spacing: 1.5px; }
+  .repBtn.saving #repBig { font-size: 26px; }
+  .repBtn.saving .ring { animation: spin 0.9s linear infinite; }
+  .repBtn.saving .ring .arc { stroke: #fff; stroke-dashoffset: 210; }
+  .repBtn.wait { background: var(--amber-d); color: #ffd98a; box-shadow: 0 0 0 10px rgba(255,176,32,.08); }
+  .repBtn.wait .ring .arc { stroke: var(--amber); }
+  .repBtn.wait #repBig { font-size: 96px; color: #fff; }
+  .repBtn.air { background: var(--red); animation: airp .8s infinite; }
+  .repBtn.air .ring .arc { stroke: #fff; }
+  .repBtn.ok { background: var(--green); color: #031a03; box-shadow: 0 0 0 10px var(--green-d); }
+  @keyframes spin { to { transform: rotate(270deg); } }
+  @keyframes airp { 50% { box-shadow: 0 0 0 18px rgba(255,69,58,.18), 0 20px 50px rgba(255,69,58,.4); } }
+  #repFlash { position: fixed; inset: 0; z-index: 9998; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px;
+    background: rgba(18,120,18,.94); color: #fff; text-align: center; animation: flash .25s ease-out; }
+  #repFlash b { font: 400 40px var(--disp); letter-spacing: 1px; }
+  #repFlash span { font-size: 17px; opacity: .95; font-weight: 600; }
+  #repFlash.dirty { background: rgba(150,85,0,.95); }
+  @keyframes flash { from { transform: scale(1.06); opacity: 0; } }
+  .repWarn { margin-top: 10px; background: var(--amber-d); border: 1px solid rgba(255,176,32,.35); color: #ffd98a; border-radius: 12px; padding: 8px 10px; font-size: 14px; }
+  .repState { text-align: center; font: 400 22px var(--disp); letter-spacing: 1px; margin: 14px 0 4px; }
+  .repState:empty { display: none; }
+  .repState.wait { color: var(--amber); }
+  .repState.ok { color: var(--green); }
+  .repHist { font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .locBtn { position: fixed; right: 14px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 60; background: #c4161c; color: #fff; border: 3px solid #fff3; border-radius: 40px; padding: 16px 20px; font-weight: 900; font-size: 15px; box-shadow: 0 6px 24px rgba(0,0,0,.55); min-height: 0; }
+  .locBtn.on { background: #fff; color: #c4161c; animation: locP 1s infinite; }
+  @keyframes locP { 50% { box-shadow: 0 0 0 10px rgba(196,22,28,.35); } }
+  .bateFontes { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .bateFontes button { min-height: 58px; font-size: 15px; }
+  .tvFase { margin-top: 8px; font-size: 14px; color: var(--muted); }
+  .tvFase b { color: var(--green); }
+  .tvPessoas { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 8px; }
+  .tvPessoas button { min-height: 58px; font-size: 15px; }
+  .tvPessoas button.on { background: var(--green); color: #041004; border-color: var(--green); }
+  .tvPessoas button.sem { opacity: .55; }
+  .bateFontes button.on { background: var(--green); color: #041004; border-color: var(--green); }
+  .bateFontes button .n { display: inline-block; min-width: 22px; height: 22px; border-radius: 11px; background: #041004; color: var(--green); font-size: 13px; line-height: 22px; margin-right: 6px; }
+  .penPlacar { text-align: center; font: 400 34px/1.1 var(--disp); letter-spacing: 1px; margin-top: 4px; }
+  .penVez { text-align: center; color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .penVez b { color: var(--green); }
+  .penGol { background: var(--green); color: #041004; border-color: var(--green); font-size: 20px; font-weight: 900; min-height: 70px; }
+  .penErrou { background: #c4161c; color: #fff; border-color: #c4161c; font-size: 20px; font-weight: 900; min-height: 70px; }
+  .golMus { width: 100%; margin: 4px 0 14px; padding: 14px 10px; font-size: 17px; font-weight: 900; letter-spacing: .5px; background: #0f2a12; color: #c8ffc4; border: 2px solid var(--green); border-radius: 14px; }
+  .golMus.on { background: var(--green); color: #041004; }
+  /* menu com POUCAS abas (⚙ menus): botões, ícones e letras maiores */
+  body.menu3 .tabs button { flex: 1 1 0; font-size: 15px; padding: 14px 4px 14px; gap: 8px; }
+  body.menu3 .tabs button::before { width: 34px; height: 34px; }
+  body.menu6 .tabs button { flex: 1 1 0; font-size: 13px; padding: 12px 2px; }
+  body.menu6 .tabs button::before { width: 27px; height: 27px; }
+  #menuCfg { position: fixed; inset: 0; z-index: 95; background: rgba(0,0,0,.6); display: none; align-items: flex-end; }
+  #menuCfg.on { display: flex; }
+  #menuCfg .box { width: 100%; background: var(--s1, #101513); border-radius: 18px 18px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); max-height: 85vh; overflow: auto; }
+  #menuCfg label { display: flex; align-items: center; gap: 12px; padding: 12px 4px; font-size: 17px; border-bottom: 1px solid var(--line); }
+  #menuCfg input { width: 24px; height: 24px; }
+  .repTh { width: 64px; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; background: #000; flex: none; display: block; }
+  .repItem { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .repItem:last-child { border-bottom: 0; }
+  .repItem span { flex: 1; min-width: 0; }
+  .tkItem { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  .tkItem:last-child { border-bottom: 0; }
+  .tkItem img { width: 84px; height: 48px; object-fit: cover; border-radius: 8px; background: #000; flex: none; }
+  .tkItem span { flex: 1; min-width: 0; }
+  .tkItem b { color: var(--text); }
+  .tkItem button { flex: 0 0 auto; width: auto; min-height: 44px; padding: 0 14px; font-size: 14px; background: var(--red-d); border-color: var(--red); color: #ffb3ad; }
+  .repItem button { flex: 0 0 auto; width: auto; min-height: 44px; padding: 0 14px; font-size: 14px; background: var(--red-d); border-color: var(--red); color: #ffb3ad; }
+  .live { background: var(--red-d); border-color: rgba(255,69,58,.35); color: #ffb4ae; }
+
+  /* placar */
+  .score { text-align: center; padding: 20px 16px 16px; }
+  .sbx { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .sbx .tm { flex: 1; font: 400 22px/1.1 var(--disp); letter-spacing: .8px; }
+  .sbx .sc { font: 400 66px/1 var(--disp); letter-spacing: 2px; min-width: 130px; font-variant-numeric: tabular-nums; }
+  .clockLine { color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: .6px; margin: 8px 0 16px; text-transform: uppercase; }
+  .goalRow { display: flex; gap: 8px; }
+  .goalRow button { min-height: 60px; padding: 8px 6px; font: 400 19px var(--disp); letter-spacing: .6px; white-space: nowrap; }
+  .goalRow .minus { flex: 0 0 46px; background: var(--s2); color: var(--muted); }
+  .gBtn { background: var(--green-d); border-color: rgba(59,227,59,.45); color: var(--green); }
+  .moms button.next { background: var(--green); color: #031a03; border-color: var(--green); }
+  .moms button.armed, .telas button.armed { background: var(--amber); color: #2a1a00; border-color: var(--amber); }
+  .stopRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .stopRow button { min-height: 48px; padding: 8px 2px; font: 400 18px var(--disp); width: auto; }
+  .stopRow button.on { background: var(--amber); color: #2a1a00; border-color: var(--amber); }
+  .stopToggle { justify-content: flex-start; background: var(--s1); color: #ffd98a; }
+  .c-stop { padding: 0; border: 0; background: none; }
+
+  /* telas */
+  .telas button.on { background: var(--violet); color: #12052a; border-color: var(--violet); }
+  .telas .main.on { background: var(--green); color: #031a03; border-color: var(--green); }
+  .telas .apres.on { background: var(--blue); color: #021822; border-color: var(--blue); }
+  .inline { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .inline span { white-space: nowrap; color: var(--muted); font-size: 14px; }
+  .inline select { margin: 0; }
+
+  /* música */
+  .tracks { display: flex; flex-direction: column; gap: 6px; }
+  .tracks button { justify-content: flex-start; text-align: left; min-height: 50px; font-size: 15px; font-weight: 600; background: var(--s2); }
+  .tracks button.on { background: var(--green); color: #031a03; border-color: var(--green); }
+  .tag { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .6px; padding: 3px 7px; border-radius: 6px; margin-left: 2px; }
+  .tag.live { background: var(--red); color: #fff; }
+  .tag.pc { background: var(--s3); color: var(--muted); }
+  .nowBar { position: sticky; top: calc(var(--top) + 62px + env(safe-area-inset-top)); z-index: 5; background: var(--s1); border: 1px solid rgba(59,227,59,.45); border-radius: var(--r); padding: 12px 14px; margin-bottom: 12px; }
+  .nowBar .t { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prog { height: 4px; background: var(--s3); border-radius: 4px; overflow: hidden; margin: 10px 0; }
+  .prog i { display: block; height: 100%; width: 0; background: var(--green); }
+  .vol { display: flex; align-items: center; gap: 12px; margin: 8px 0; color: var(--muted); }
+  .vol .tag { width: 44px; text-align: center; }
+
+  /* escalação / times */
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--s2); border-radius: 14px; margin-bottom: 12px; }
+  .seg button { min-height: 44px; background: transparent; border: 0; color: var(--muted); font: 400 17px var(--disp); letter-spacing: .8px; }
+  .seg button.on { background: var(--s3); color: var(--text); box-shadow: 0 0 0 1px var(--line2) inset; }
+  .escBtns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .escBtns .big { grid-column: 1 / -1; background: var(--green); color: #031a03; border-color: var(--green); min-height: 60px; font-size: 16px; }
+  .escBtns .off { grid-column: 1 / -1; background: transparent; color: #ff8a80; border-color: rgba(255,69,58,.3); }
+  .plist { font-size: 15px; line-height: 1.5; margin-top: 4px; }
+  .plist .p .fn { margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: .5px; color: var(--green); background: var(--green-d); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+  .plist .p { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--line); color: var(--dim); }
+  .plist .p b { min-width: 24px; }
+  .plist .p.shown { color: var(--text); font-weight: 650; }
+  .plist .p.next { color: var(--green); font-weight: 700; }
+  .plist b { display: inline-block; min-width: 26px; font: 400 15px var(--disp); color: var(--muted); }
+
+  /* gol + escolher jogador */
+  #goalAnim { position: fixed; inset: 0; z-index: 95; display: none; align-items: center; justify-content: center; flex-direction: column; overflow: hidden; }
+  #goalAnim.on { display: flex; }
+  #goalAnim .bg { position: absolute; inset: 0; opacity: .94; }
+  #goalAnim .ball { font-size: 110px; position: relative; animation: kick 0.9s cubic-bezier(.2,.7,.2,1) both; }
+  #goalAnim .txt { position: relative; font: 400 76px var(--disp); letter-spacing: 3px; color: #fff; text-shadow: 0 6px 30px rgba(0,0,0,.5); animation: pop .5s .55s cubic-bezier(.2,1.6,.4,1) both; }
+  #goalAnim .team { position: relative; font: 400 26px var(--disp); letter-spacing: 1px; color: #fff; opacity: .9; animation: pop .4s .75s both; }
+  @keyframes kick { 0% { transform: translate(-60vw, 30vh) rotate(-540deg) scale(.6); } 70% { transform: translate(0, 0) rotate(0) scale(1.15); } 100% { transform: scale(1); } }
+  @keyframes pop { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .pickSheet { position: fixed; inset: 0; z-index: 96; display: none; flex-direction: column; background: var(--bg); }
+  .pickSheet.on { display: flex; }
+  .pickSheet .hd { padding: calc(16px + env(safe-area-inset-top)) 16px 12px; border-bottom: 1px solid var(--line); }
+  .pickSheet .hd b { font: 400 24px var(--disp); letter-spacing: .6px; display: block; }
+  .pickSheet .grid { flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: max-content; gap: 8px; align-content: start; }
+  .pickSheet .pl { min-height: 0; padding: 12px 4px; flex-direction: column; gap: 4px; font-size: 13px; line-height: 1.15; background: var(--s1); }
+  .pickSheet .pl .ph { flex: none; width: 72px; height: 72px; border-radius: 50%; background: var(--s3) center/cover no-repeat; display: flex; align-items: center; justify-content: center; font: 400 24px var(--disp); color: #fff; border: 2px solid var(--tc, #3be33b); }
+  .pickSheet .pl .nm { font-weight: 700; }
+  .pickSheet .pl .num { color: var(--muted); font-size: 12px; }
+  .pickSheet .pl.sel { background: var(--tc, #3be33b); color: #041004; }
+  .pickSheet .ft { padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); display: flex; gap: 8px; }
+  .pickSheet .sec { grid-column: 1 / -1; font-size: 12px; letter-spacing: .9px; color: var(--muted); font-weight: 700; margin-top: 4px; }
+
+  /* substituição */
+  .subPick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .subPick button { min-height: 70px; font-size: 15px; }
+  .subPick .out { color: #ff9c94; }
+  .subPick .in { color: #8df08d; }
+  .subItem { display: flex; align-items: center; gap: 8px; background: var(--s2); border: 1px solid var(--line); border-radius: 14px; padding: 10px; margin-top: 8px; }
+  .subItem .t { flex: 1; font-size: 14px; line-height: 1.4; }
+  .subItem .t b { font-family: var(--disp); font-weight: 400; letter-spacing: .6px; }
+  .subItem .t i { font-style: normal; color: #ff9c94; }
+  .subItem .t em { font-style: normal; color: #8df08d; }
+  .subItem button { width: auto; min-height: 44px; padding: 10px 12px; font-size: 14px; }
+  a.btnlink { display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--text); background: var(--s3); border: 1px solid var(--line); border-radius: 14px; min-height: 52px; font-weight: 650; margin-top: 8px; }
+
+  /* janelinha (instalar, oferecida 1 vez) */
+  .sheetBg { position: fixed; inset: 0; z-index: 97; background: rgba(0,0,0,.6); display: flex; align-items: flex-end; }
+  .sheetBg.hidden { display: none !important; }
+  .sheetBox { width: 100%; background: var(--s1); border-top: 1px solid var(--line2); border-radius: 24px 24px 0 0; padding: 22px 18px calc(18px + env(safe-area-inset-bottom)); animation: up .25s ease-out; text-align: center; }
+  .sheetBox img { width: 60px; height: 60px; border-radius: 16px; }
+  .sheetBox h3 { margin: 12px 0 6px; font: 400 24px var(--disp); letter-spacing: .6px; }
+  .sheetBox #installHow { font-size: 15px; color: var(--muted); line-height: 1.55; margin: 6px 0 16px; }
+  .sheetBox #installHow b { color: var(--text); }
+  @keyframes up { from { transform: translateY(100%); } }
+</style>
+</head>
+<body>
+  <header class="top" id="topBar">
+    <img class="logo" src="app-icon/icon-192.png" alt="">
+    <div class="ttl"><b>COPA ARANÃS</b><small><span id="dot" class="dot"></span><span id="who">equipe</span></small></div>
+    <button id="btnInstall" class="hidden"></button>
+    <button id="btnMenus" class="gear" data-ic="settings" title="escolher os menus"></button>
+    <button id="btnWho" class="avatar" title="trocar de pessoa">?</button>
+  </header>
+  <div id="menuCfg"><div class="box">
+    <b style="font-size:19px">Quais menus aparecem neste celular?</b>
+    <div class="hint" style="margin:4px 0 8px">Com poucos menus, os botões ficam maiores. Fica salvo neste celular.</div>
+    <div id="menuLista"></div>
+    <div class="msg" id="menuMsg"></div>
+    <button id="menuOk" class="primary" style="width:100%;margin-top:14px">Pronto</button>
+  </div></div>
+
+  <div id="installSheet" class="sheetBg hidden">
+    <div class="sheetBox">
+      <img src="app-icon/icon-192.png" alt="">
+      <h3>COPA ARANÃS NA TELA INICIAL</h3>
+      <div id="installHow"></div>
+      <button id="installOk" class="ghost">agora não</button>
+    </div>
+  </div>
+
+  <div id="httpWarn" class="warn hidden">Para o intercom, <a id="httpsLink" href="#">abra pelo link seguro</a>.</div>
+
+  <div id="setup" class="welcome hidden">
+    <div class="brand">
+      <img src="app-icon/icon-192.png" alt="">
+      <h2>COPA ARANÃS</h2>
+      <p>Equipe da transmissão</p>
+    </div>
+    <div id="knownBox" class="hidden">
+      <div class="sec">Quem é você?</div>
+      <div id="knownList" class="people"></div>
+      <div class="or">primeira vez?</div>
+    </div>
+    <input type="text" id="name" placeholder="Seu nome" maxlength="30" autocomplete="given-name">
+    <button id="btnSave" class="primary">Entrar</button>
+  </div>
+
+  <div id="main" class="hidden">
+    <nav class="tabs">
+      <button id="tabRep" data-ic="replay">Replay</button>
+      <button id="tabSc" data-ic="placar">Placar</button>
+      <button id="tabTl" data-ic="telas">Telas</button>
+      <button id="tabMu" data-ic="musica">Música</button>
+      <button id="tabEsc" data-ic="esc">Escalação</button>
+      <button id="tabSub" data-ic="trocas">Substituição</button>
+      <button id="tabCq" data-ic="trophy">Craque</button>
+      <button id="tabDr" data-ic="drone">Drone</button>
+      <button id="tabPt" data-ic="tag">Patrocínio</button>
+      <button id="tabTb" data-ic="esc">Tabela</button>
+      <button id="tabMs" data-ic="mascote">Mascote</button>
+      <button id="tabEq" data-ic="cam" class="on">Câmera</button>
+    </nav>
+
+    <!-- CRAQUE DO JOGO: votação dos comentaristas no canto da tela + revelação com troféu -->
+    <div id="paneCq" class="hidden">
+      <button id="cqShow" class="dBig cqShow">MOSTRAR CRAQUE DO JOGO</button>
+      <div class="card" style="margin-top:12px">
+        <div class="lbl" data-ic="trophy">Voto em…</div>
+        <div class="row" style="margin-top:8px">
+          <button id="cqVoteHome" class="cqTeam">CASA</button>
+          <button id="cqVoteAway" class="cqTeam">FORA</button>
+        </div>
+        <div class="dHint">o comentarista falou um nome → toque no time e escolha o jogador. Voto no mesmo jogador = +1.</div>
+      </div>
+      <div class="card" id="cqListCard">
+        <div class="lbl" data-ic="trophy">Votação</div>
+        <div id="cqList" class="cqList"></div>
+      </div>
+      <button id="cqReveal" class="dBig cqReveal" disabled>🏆 REVELAR O CRAQUE</button>
+      <div id="cqTie" class="card hidden"><div class="lbl">Empate — quem é o craque?</div><div id="cqTieBtns" class="row" style="flex-wrap:wrap;margin-top:8px"></div></div>
+      <button id="cqReset" style="margin-top:10px">zerar votação</button>
+      <div class="msg" id="cqMsg"></div>
+    </div>
+
+    <!-- MASCOTE: animações da pasta 13 - Mascote/Videos (o verde sai sozinho) — na mão ou sorteadas -->
+    <div id="paneMs" class="hidden">
+      <div class="card">
+        <label class="row" style="gap:10px;align-items:center;justify-content:flex-start;font-size:16px"><input type="checkbox" id="msAleat" style="flex:0 0 auto;width:22px;height:22px"> <b>entrar sozinho (aleatório)</b></label>
+        <div class="row" style="gap:8px;margin-top:10px;align-items:center"><span class="dHint" style="margin:0">a cada</span><select id="msMin" style="flex:1"></select><span class="dHint" style="margin:0">a</span><select id="msMax" style="flex:1"></select><span class="dHint" style="margin:0">min</span></div>
+        <div class="dHint" id="msProx" style="margin-top:8px"></div>
+        <div class="dHint" style="margin-top:4px">só entra com o jogo no ar, o cronômetro andando e sem replay. Desmarque "no sorteio" no vídeo que não deve sair sozinho.</div>
+      </div>
+      <div class="msGrid" id="msGrid"><div class="hint">carregando…</div></div>
+      <button id="msParar" style="width:100%;margin-top:10px">⏹ tirar o mascote da tela</button>
+      <div class="msg" id="msMsg"></div>
+      <div class="hint" style="margin-top:8px">Vídeo novo na pasta <b>00 - Arquivos/13 - Mascote/Videos</b> aparece aqui sozinho (o PC tira o verde em ~20 s); apagou da pasta, some daqui.</div>
+    </div>
+
+    <!-- TABELA: grupos do iFut com o placar ao vivo + gol dos outros jogos (animação no OBS) -->
+    <div id="paneTb" class="hidden">
+      <div class="seg tbGrupos" id="tbGrupos"></div>
+      <div class="card"><div class="tbTable" id="tbTable"><div class="hint">carregando…</div></div></div>
+      <button id="tbShow" class="dBig cqShow">📺 MOSTRAR NA TELA</button>
+      <div class="msg" id="tbMsg"></div>
+      <div class="card" style="margin-top:12px">
+        <div class="lbl" data-ic="placar">Outros jogos de hoje</div>
+        <div id="tbOutros"></div>
+        <div class="dHint">gol num outro jogo: toque em ⚽ — a animação do gol entra no OBS e a tabela atualiza (o iFut também atualiza sozinho a cada minuto)</div>
+      </div>
+      <div class="card">
+        <label class="row" style="gap:10px;align-items:center"><input type="checkbox" id="tbAuto"> a tabela entra sozinha quando um time passa outro</label>
+        <label class="row" style="gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="tbGols"> animação de gol dos outros jogos</label>
+        <button id="tbRefresh" style="margin-top:10px">↻ atualizar do iFut</button>
+      </div>
+    </div>
+
+    <!-- PATROCÍNIO: um botão com a logo de cada patrocinador → tela do patrocínio no ar; de novo → volta pro jogo -->
+    <div id="panePt" class="hidden">
+      <div class="ptState" id="ptState">…</div>
+      <div class="ptGrid" id="ptGrid"></div>
+      <div class="msg" id="ptMsg"></div>
+      <div class="hint" style="margin-top:10px">🎙 Locução: aperte ⏺ (botão vermelho no canto), toque na logo da empresa, fale e aperte ⏹ — o vídeo é salvo no PC com o nome da empresa.</div>
+    </div>
+    <button id="locBtn" class="locBtn hidden">⏺ GRAVAR LOCUÇÃO</button>
+
+    <!-- DRONE: recebe o RTMP do app do drone, cena no OBS, no ar / gravar, botão flutuante (por cima do app do drone) -->
+    <div id="paneDr" class="hidden">
+      <div class="card">
+        <div class="dHealth" id="dHealth"><span class="dot"></span><div><b id="dHealthT">SEM IMAGEM</b><small id="dHealthW">recepção desligada</small></div>
+          <div class="dNums"><span id="dFps">–</span><small>QPS</small></div><div class="dNums"><span id="dMbps">–</span><small>MBPS</small></div></div>
+      </div>
+      <div class="row"><button id="dAir" class="dBig air" disabled>TELA CHEIA</button><button id="dSplit" class="dBig dSplit" disabled>◧ DIVIDIDA</button></div>
+      <button id="dRec" class="dBig rec" style="margin-top:10px">GRAVAR</button>
+      <div class="msg" id="dMsg"></div>
+      <div class="card" style="margin-top:12px">
+        <div class="lbl" data-ic="drone">Ligar o drone</div>
+        <div class="dHint" style="margin:0 0 8px">No app do drone: <b>Transmissão ao vivo → RTMP</b> e cole este link:</div>
+        <div class="dUrl"><span id="dUrl">…</span><button id="dCopy" data-ic="copy" title="copiar"></button></div>
+        <div class="dHint">ou cole aqui um link pra puxar (rtmp / rtsp / srt de outro lugar):</div>
+        <input type="text" id="dPull" placeholder="opcional" autocomplete="off" />
+        <div class="row" style="margin-top:10px"><button id="dOn" class="primary">LIGAR E CRIAR A CENA</button><button id="dOff" style="flex:0 0 120px">DESLIGAR</button></div>
+      </div>
+      <div class="card">
+        <div class="lbl" data-ic="pip">Botão flutuante</div>
+        <button id="dFloat" style="margin-top:8px">ATIVAR E IR PRO APP DO DRONE</button>
+        <div class="dHint">Uma janelinha fica por cima do app do drone: <b>⏯ = pôr no ar / voltar</b> · <b>⏭ = gravar / parar</b>. Ela some quando você sai da aba Drone.</div>
+      </div>
+      <canvas id="dCv" width="480" height="270" style="display:none"></canvas>
+      <video id="dPip" muted playsinline autopictureinpicture style="position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;bottom:0;left:0"></video>
+    </div>
+
+    <!-- TROCAS -->
+    <div id="paneSub" class="hidden">
+      <div class="card">
+        <div class="lbl" data-ic="trocas">Substituição</div>
+        <div class="seg" id="subSide">
+          <button data-side="home" id="subHome">CASA</button>
+          <button data-side="away" id="subAway">VISITANTE</button>
+        </div>
+        <div class="subPick">
+          <button class="out" id="subOutBtn" data-ic="down">Sai</button>
+          <button class="in" id="subInBtn" data-ic="up">Entra</button>
+        </div>
+        <button id="subAdd" class="primary" data-ic="plus" style="margin-top:10px">Preparar</button>
+        <div class="msg" id="subMsg"></div>
+      </div>
+      <div class="card">
+        <div class="lbl" data-ic="check">Prontas</div>
+        <div id="subList"><div class="hint">nenhuma ainda</div></div>
+      </div>
+    </div>
+
+    <!-- ESCALAÇÃO -->
+    <div id="paneEsc" class="hidden">
+      <div class="card">
+        <div class="head"><div class="lbl" data-ic="users">Escalação na tela</div><button id="escGear" class="gear" data-ic="settings" title="montar a escalação"></button></div>
+        <div class="seg sideSel">
+          <button data-side="home" id="escHome">CASA</button>
+          <button data-side="away" id="escAway">VISITANTE</button>
+        </div>
+        <div class="escBtns">
+          <button class="big" id="escNext" data-ic="play">Próximo jogador</button>
+          <button id="escPrev" data-ic="prev">Voltar</button>
+          <button id="escAll" data-ic="all">Todos</button>
+          <button class="off" id="escOff" data-ic="x">Tirar do ar</button>
+        </div>
+        <div class="clockLine" id="escStatus" style="margin:16px 0 6px">—</div>
+        <div class="plist" id="escList"></div>
+        <div class="msg" id="escMsg"></div>
+      </div>
+      <div class="card">
+        <div class="lbl" data-ic="esc">No rodapé</div>
+        <div class="escBtns">
+          <button id="lowHome">Escalação casa</button>
+          <button id="lowAway">Escalação visit.</button>
+          <button id="benchHome" data-ic="bench">Reservas casa</button>
+          <button id="benchAway" data-ic="bench">Reservas visit.</button>
+          <button class="off" id="lowOff" data-ic="x">Tirar do rodapé</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELAS -->
+    <div id="paneTl" class="hidden">
+      <div class="card">
+        <div class="lbl" data-ic="telas">No ar <small>· toque 2x pra trocar</small></div>
+        <div class="list telas">
+          <button data-tela="principal" class="main" data-ic="video">Jogo (cena principal)</button>
+          <button data-tela="apresentador" class="apres" data-ic="presenter">Câmera do apresentador</button>
+          <button data-tela="inicio" data-ic="hourglass">Começaremos em instantes</button>
+          <button data-tela="intervalo" data-ic="coffee">Intervalo</button>
+          <button data-tela="patrocinio" data-ic="tag">Patrocínio</button>
+          <button id="tlChat" data-ic="video">◧ Comentários do YouTube (tela dividida)</button>
+          <button data-tela="outra" data-ic="pc" disabled><span id="telaOutra">outra cena</span></button>
+        </div>
+        <div class="inline">
+          <span>Apresentador na ATEM</span>
+          <select id="apresIn"></select>
+        </div>
+      </div>
+      <div class="msg" id="tlMsg"></div>
+      <div class="card">
+        <div class="lbl" data-ic="video">Bate-papo / entrevista <small>· escolha 2 ou 3</small></div>
+        <div class="bateFontes" id="bateFontes"></div>
+        <div class="row" style="margin-top:10px"><button id="bateAr" class="air">NO AR</button><button id="bateSair">SAIR</button></div>
+        <div class="lbl" style="margin-top:14px">Google Meet</div>
+        <div class="dHint" style="margin:0 0 8px">O PC abre um Chrome só da transmissão, que entra na chamada como <b>Copa Aranãs TV</b> (sem câmera e sem microfone). Depois é só tocar no NOME de quem vai aparecer.</div>
+        <div class="row" style="gap:8px"><input id="tvLink" placeholder="link do Meet (abc-defg-hij)" style="flex:1" autocapitalize="off" autocomplete="off"><button id="tvAbrir" style="flex:0 0 96px">ABRIR</button></div>
+        <div class="tvFase" id="tvFase">Meet fechado</div>
+        <button id="tvEntrar" class="hidden" style="width:100%;margin-top:8px">ENTRAR NA CHAMADA</button>
+        <div class="tvPessoas" id="tvPessoas"></div>
+        <details style="margin-top:12px"><summary class="dHint">modo antigo: capturar uma janela do Meet aberta no seu Chrome</summary>
+        <div class="row" style="gap:8px;margin-top:8px"><select id="bateJanela" style="flex:1"><option value="">— escolha a janela do Meet —</option></select><button id="bateJanRef" style="flex:0 0 56px" title="atualizar a lista de janelas">🔄</button></div>
+        <div class="row" style="margin-top:8px"><button id="bateEnq">🎯 ENQUADRAR NA PESSOA</button></div>
+        <label class="inline" style="margin-top:8px;display:flex;gap:10px;align-items:center"><input type="checkbox" id="bateSeguir"> seguir a pessoa sozinho (re-enquadra se ela se mexer)</label>
+        <button id="tvFechar" style="width:100%;margin-top:8px;background:transparent">fechar o Chrome da TV</button>
+        </details>
+        <div class="msg" id="bateMsg"></div>
+      </div>
+    </div>
+
+    <!-- MÚSICA -->
+    <div id="paneMu" class="hidden">
+      <div id="muNow" class="nowBar hidden">
+        <div class="t" id="muTitle"></div>
+        <div class="prog"><i id="muProg"></i></div>
+        <div class="row">
+          <button id="muPause" data-ic="pause"></button>
+          <button id="muNext" class="hidden" data-ic="next"></button>
+          <button id="muStop" data-ic="stop"></button>
+        </div>
+      </div>
+      <div id="muWarn" class="warn hidden"></div>
+      <div class="card">
+        <div class="head"><div class="lbl" data-ic="flag">Hino Nacional <span class="tag live">LIVE</span></div><button class="gear" data-pick="hino" data-ic="folder" title="escolher a pasta no PC"></button></div>
+        <div class="tracks" id="mu-hino"></div>
+      </div>
+      <div class="card">
+        <div class="head"><div class="lbl" data-ic="trophy">Música da Copa <span class="tag live">LIVE</span></div><button class="gear" data-pick="copa" data-ic="folder" title="escolher a pasta no PC"></button></div>
+        <div class="tracks" id="mu-copa"></div>
+      </div>
+      <div class="card">
+        <div class="head"><div class="lbl" data-ic="musica">Músicas do jogo <span class="tag pc">SÓ NO PC</span></div><button class="gear" data-pick="jogo" data-ic="folder" title="escolher a pasta no PC"></button></div>
+        <div class="seg" id="muFonte"><button data-f="pasta">PASTA</button><button data-f="spotify">SPOTIFY</button></div>
+        <div id="muSp" class="hidden" style="margin-bottom:10px">
+          <div class="hint" id="muSpInfo"></div>
+        </div>
+        <button id="muShuffle" data-ic="shuffle" style="margin-bottom:10px">Tocar todas</button>
+        <div class="tracks" id="mu-jogo"></div>
+      </div>
+      <div class="card">
+        <div class="lbl" data-ic="vol">Volume</div>
+        <div class="vol"><span class="tag live">LIVE</span><input type="range" id="muVolLive" min="0" max="1" step="0.05"></div>
+        <div class="vol"><span class="tag pc">PC</span><input type="range" id="muVolPc" min="0" max="1" step="0.05"></div>
+        <div class="hint hidden" id="muFolders"></div>
+      </div>
+    </div>
+
+    <!-- PLACAR -->
+    <div id="paneSc" class="hidden">
+      <div class="card score">
+        <div class="sbx">
+          <div class="tm" id="scHome">CASA</div>
+          <div class="sc" id="scScore">0 × 0</div>
+          <div class="tm" id="scAway">VISITANTE</div>
+        </div>
+        <div class="clockLine" id="scClock">—</div>
+        <div class="goalRow">
+          <button class="minus" id="scHomeMinus" data-ic="minus" title="tirar gol"></button>
+          <button class="gBtn" id="scHomeGoal">GOL</button>
+          <button class="gBtn" id="scAwayGoal">GOL</button>
+          <button class="minus" id="scAwayMinus" data-ic="minus" title="tirar gol"></button>
+        </div>
+        <div class="msg" id="scMsg"></div>
+      </div>
+      <div class="card c-mom">
+        <div class="lbl" data-ic="timer">Momento do jogo <small>· toque 2x</small></div>
+        <div class="tiles moms">
+          <button data-ev="kickoff" data-ic="play">Começar</button>
+          <button data-ev="halftime" data-ic="pause">Fim do 1º tempo</button>
+          <button data-ev="second_half" data-ic="play">2º tempo</button>
+          <button data-ev="fulltime" data-ic="end">Fim de jogo</button>
+        </div>
+      </div>
+      <div class="card c-stop">
+        <button id="stopToggle" class="stopToggle" data-ic="timer">Acréscimos: sem</button>
+        <div id="stopBox" class="hidden" style="margin-top:12px">
+          <div class="stopRow" id="scStop"></div>
+        </div>
+      </div>
+      <!-- DISPUTA DE PÊNALTIS: o placar próprio embaixo da tela (o mesmo do painel do PC) -->
+      <div class="card">
+        <div class="lbl">🥅 Disputa de pênaltis</div>
+        <div id="penIdle">
+          <div class="dHint" style="margin:0 0 8px">Quem bate primeiro?</div>
+          <div class="row"><button id="penStartH">CASA</button><button id="penStartA">VISITANTE</button></div>
+        </div>
+        <div id="penOn" class="hidden">
+          <div class="penPlacar" id="penPlacar">—</div>
+          <div class="penVez" id="penVez"></div>
+          <div class="row" style="margin-top:10px"><button id="penGol" class="penGol">✓ GOL</button><button id="penErrou" class="penErrou">✕ PERDEU</button></div>
+          <div class="row" style="margin-top:8px"><button id="penUndo">↶ desfazer</button><button id="penTela">esconder da tela</button></div>
+          <button id="penNova" style="width:100%;margin-top:8px;background:transparent">recomeçar a disputa</button>
+        </div>
+        <div class="msg" id="penMsg"></div>
+      </div>
+    </div>
+
+    <!-- REPLAY -->
+    <div id="paneRep" class="hidden">
+      <!-- MELHORES MOMENTOS: status dos vídeos DESTE jogo (só deixa pôr no ar quando está pronto) -->
+      <div class="card hlCard">
+        <div class="lbl" data-ic="film">Melhores momentos <small id="hlJogo" class="hlJogo"></small></div>
+        <div class="hlRow" id="hl1T"><div class="hlInfo"><b>1º TEMPO</b><span class="hlSt">…</span><i class="hlBar"><i></i></i></div><button class="hlAir" disabled>NO AR</button></div>
+        <div class="hlRow" id="hljogo"><div class="hlInfo"><b>JOGO INTEIRO</b><span class="hlSt">…</span><i class="hlBar"><i></i></i></div><button class="hlAir" disabled>NO AR</button></div>
+        <div class="dHint" id="hlObs"></div>
+        <div class="msg" id="hlMsg"></div>
+      </div>
+      <div class="card" style="text-align:center;padding-bottom:22px">
+        <div class="head">
+          <div class="lbl" data-ic="replay">Viu o lance? Conte até 5</div>
+          <button id="repGear" class="gear" data-ic="settings" title="configurar"></button>
+        </div>
+        <div id="repCfg" class="cfg hidden">
+          <div class="lbl">Duração do replay</div>
+          <select id="repTail"></select>
+          <div class="lbl">Vai pro ar sozinho depois de</div>
+          <select id="repAir"></select>
+          <div class="lbl">Trilha do gol toca por</div>
+          <select id="golSeg"></select>
+        </div>
+        <button id="btnGolMus" class="golMus">⚽ TRILHA DO GOL</button>
+        <button id="btnRep" class="repBtn">
+          <svg class="ring" viewBox="0 0 108 108"><circle class="trk" cx="54" cy="54" r="48"/><circle id="repArc" class="arc" cx="54" cy="54" r="48"/></svg>
+          <span id="repBig">REPLAY</span><small id="repSub">salva o lance</small>
+        </button>
+        <div id="repWarn" class="repWarn hidden"></div>
+        <div id="repState" class="repState"></div>
+        <div id="repActs" class="hidden"></div>
+        <div class="msg" id="repMsg"></div>
+        <p class="hint hidden" id="repHint"></p>
+      </div>
+      <button id="repStudio" data-ic="film" style="margin-bottom:12px;min-height:62px;font-size:17px">Navegar no replay</button>
+      <button id="repLiveGame" class="hidden"></button>
+      <div class="card">
+        <div class="lbl" data-ic="replay">Últimos replays</div>
+        <div class="repHist" id="repHist">nenhum ainda</div>
+      </div>
+      <div class="card">
+        <div class="lbl" data-ic="film">Takes dos cinegrafistas</div>
+        <div class="dHint" style="margin:0 0 6px">aquecimento, vestiário, detalhes da camisa… gravados pelo celular — toque e vai pro ar (com as barras do replay)</div>
+        <div id="tkList"><div class="hint">carregando…</div></div>
+        <button id="tkEdit" style="width:100%;margin-top:8px">🎬 EDIÇÃO RÁPIDA DOS MEUS TAKES (sequência + música + logo)</button>
+      </div>
+    </div>
+
+    <!-- CÂMERA E INTERCOM -->
+    <div id="paneEq">
+      <button id="btnCamMe" class="camMe" data-ic="camera" style="margin-bottom:12px">Usar a câmera deste celular</button>
+
+      <div class="card">
+        <div class="lbl" data-ic="video">Minha câmera</div>
+        <select id="posto"></select>
+        <div id="atemRow"><select id="atemIn"></select></div>
+        <div id="camCard">
+          <div id="tally" class="tally">FORA DO AR</div>
+          <div id="myInRow" class="inline hidden" style="margin:0 0 12px">
+            <span>Entrada da ATEM</span>
+            <select id="myIn"></select>
+          </div>
+          <button id="btnAir" class="air" data-ic="live">Pôr no ar</button>
+          <button id="btnBack" class="back" data-ic="prev">Voltar pra principal</button>
+          <div class="msg" id="camMsg"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="lbl" data-ic="cam">Intercom</div>
+          <button id="icGear" class="gear" data-ic="settings" title="microfone e fone"></button>
+        </div>
+        <div id="icCfg" class="cfg hidden">
+          <div class="lbl">Microfone</div>
+          <select id="icMic"></select>
+          <div class="meter"><i id="icMeter"></i></div>
+          <div class="lbl">Ouvir em</div>
+          <select id="icOut"></select>
+          <button id="icTest" data-ic="vol">Testar o som</button>
+          <div class="hint" id="icCfgHint" style="margin-top:8px"></div>
+        </div>
+        <button id="btnJoin" class="primary" data-ic="cam">Entrar no intercom</button>
+        <div id="icOn" class="hidden">
+          <button id="ptt" class="ptt" data-ic="mic">Segure para falar</button>
+          <label class="check"><input type="checkbox" id="openMic"> Microfone sempre aberto</label>
+          <div class="vol" style="margin-top:12px" data-ic="vol"><input type="range" id="vol" min="0" max="1" step="0.05" value="1"></div>
+          <div class="peers" id="peers"></div>
+          <div class="lbl" style="margin:16px 0 10px">Falar só com</div>
+          <div class="privs" id="privs"><span class="hint">ninguém mais ainda</span></div>
+          <button id="btnLeave" class="ghost back" data-ic="out">Sair do intercom</button>
+        </div>
+        <div class="msg" id="icMsg"></div>
+      </div>
+
+      <button id="btnLance" data-ic="flag">Marcar lance</button>
+      <div class="msg" id="lanceMsg"></div>
+
+      <div class="card hidden" id="larixCard" style="margin-top:12px">
+        <div class="lbl" data-ic="phone">Câmera sem fio (Larix)</div>
+        <a class="btnlink" id="larixLink" href="#">Configurar o Larix</a>
+        <div class="row" style="margin-top:8px">
+          <a class="btnlink" href="https://play.google.com/store/apps/details?id=com.wmspanel.larix_broadcaster" target="_blank">Android</a>
+          <a class="btnlink" href="https://apps.apple.com/app/larix-broadcaster/id1042474385" target="_blank">iPhone</a>
+        </div>
+        <p class="hint" id="srtTxt"></p>
+      </div>
+    </div>
+  </div>
+  <div id="pttBar" class="hidden"></div>
+  <div id="repFlash"></div>
+  <div id="goalAnim"><div class="bg" id="goalBg"></div><div class="ball">⚽</div><div class="txt">GOOOL!</div><div class="team" id="goalTeam"></div></div>
+  <div id="pickSheet" class="pickSheet">
+    <div class="hd"><b id="pickTitle">Quem?</b><span class="hint" id="pickSub" style="margin:0"></span></div>
+    <input id="pickBusca" type="search" placeholder="🔎 buscar: nome, apelido ou número" autocomplete="off" style="margin:0 12px 8px;width:calc(100% - 24px)">
+    <div class="grid" id="pickGrid"></div>
+    <div class="ft"><button id="pickSkip" class="ghost">Não sei agora</button></div>
+  </div>
+  <div id="escSheet" style="position:fixed;inset:0;z-index:90;display:none;flex-direction:column;background:var(--bg)">
+    <div style="display:flex;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px;border-bottom:1px solid var(--line)">
+      <b style="flex:1;font:400 20px var(--disp);letter-spacing:.6px">MONTAR A ESCALAÇÃO</b>
+      <button id="escSheetClose" class="gear" data-ic="x"></button>
+    </div>
+    <iframe id="escFrame" style="flex:1;border:0;width:100%;background:var(--bg)"></iframe>
+  </div>
+
+<script src="intercom.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const KEY = 'aranas.equipe.me';
+  let me = null;           // { name, posto }
+  let cfg = null;          // /api/equipe
+  let atem = null;         // status do ATEM
+  let obsProgram = '';
+  let ws = null;
+
+  const api = (p, body) => fetch(p, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined).then((r) => r.json()).catch(() => ({ ok: false, error: 'sem conexão com o PC' }));
+  const say = (el, t, ok) => { el.textContent = t || ''; el.className = 'msg' + (ok ? ' ok' : ''); if (t) setTimeout(() => { if (el.textContent === t) el.textContent = ''; }, 4000); };
+
+  try { me = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { me = null; }
+  // quem já está cadastrado neste celular entra na lista do PC (aparece pra escolher no endereço novo)
+  if (me?.name) api('/api/equipe/eu', me);
+
+  async function loadCfg() {
+    cfg = await api('/api/equipe');
+    if (!cfg.ok) return;
+    if (location.protocol === 'http:' && location.hostname !== 'localhost') {
+      $('httpWarn').classList.remove('hidden');
+      $('httpsLink').href = cfg.url;
+    }
+    const sel = $('posto');
+    // padrão = equipe sem câmera (placar, replay, telas, intercom); câmera é a exceção
+    sel.innerHTML = '<option value="">Não opero câmera</option>'
+      + '<option value="atem">📷 Câmera ligada na ATEM</option>'
+      + cfg.postos.filter((p) => p.kind !== 'nenhum').map((p) => `<option value="${p.id}">${p.name}${p.kind === 'atem' ? ` (ATEM ${p.atemInput})` : p.kind === 'sem-fio' ? ' (sem fio)' : ''}</option>`).join('');
+    // quem já entrou antes (em qualquer endereço): um toque e entra
+    const kn = (cfg.known || []);
+    $('knownBox').classList.toggle('hidden', !kn.length);
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    $('knownList').innerHTML = kn.map((k, i) => `<button data-k="${i}"><span class="ini">${esc(k.name.trim()[0] || '?').toUpperCase()}</span><span class="nm">${esc(k.name)}</span></button>`).join('');
+    $('knownList').querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => {
+      const k = kn[Number(b.dataset.k)];
+      me = { name: k.name, posto: k.posto || '', atemInput: k.atemInput || 2 };
+      localStorage.setItem(KEY, JSON.stringify(me));
+      api('/api/equipe/eu', me);
+      render();
+      if (ic.joined) ic.reconnected();
+    }));
+    if (me) sel.value = me.posto ?? '';
+    fillInputs();
+    // escolheu a câmera dele (aba Câmera): salva na hora
+    sel.onchange = () => {
+      if (!me) return;
+      me = { ...me, posto: sel.value || '', atemInput: Number($('myIn').value) || me.atemInput || 2 };
+      localStorage.setItem(KEY, JSON.stringify(me));
+      api('/api/equipe/eu', me);
+      render();
+      if (ic.joined) ic.reconnected();
+    };
+    render();
+  }
+  /* entradas da ATEM (nome que está na ATEM: "Camera 2"…) */
+  function fillInputs() {
+    const list = atem?.inputs?.length ? atem.inputs : [1, 2, 3, 4].map((id) => ({ id, name: `HDMI ${id}` }));
+    const opts = list.map((i) => `<option value="${i.id}">${i.name} (entrada ${i.id})${atem?.program === i.id ? ' · no ar agora' : ''}</option>`).join('');
+    for (const id of ['atemIn', 'myIn']) {
+      const el = $(id);
+      const keep = el.value || String(me?.atemInput ?? 2);
+      el.innerHTML = opts;
+      el.value = keep;
+    }
+  }
+  // "câmera na ATEM" escolhida no próprio celular (entrada guardada aqui) ou um posto do painel
+  const posto = () => {
+    if (me?.posto === 'atem') return { id: 'atem', name: `Câmera na ATEM · entrada ${me.atemInput}`, kind: 'atem', atemInput: Number(me.atemInput) || 2 };
+    return cfg?.postos.find((p) => p.id === me?.posto);
+  };
+
+  function render() {
+    const show = !!me;
+    $('setup').classList.toggle('hidden', show);
+    $('topBar').classList.toggle('hidden', !show); // boas-vindas: tela limpa, sem o topo
+    $('main').classList.toggle('hidden', !show);
+    if (!show) { $('name').value = me?.name ?? ''; return; }
+    const p = posto();
+    $('who').textContent = p ? `${me.name} · ${p.kind === 'atem' ? 'câmera ATEM ' + p.atemInput : p.name}` : me.name;
+    $('btnWho').textContent = (me.name.trim()[0] || '?').toUpperCase();
+    $('posto').value = me.posto ?? '';
+    $('camCard').classList.toggle('hidden', !p || p.kind === 'nenhum');
+    $('myInRow').classList.toggle('hidden', !(p && p.id === 'atem'));
+    if (p && p.id === 'atem') $('myIn').value = String(p.atemInput);
+    const lx = p && p.kind === 'sem-fio' && cfg.larix?.[p.id];
+    $('larixCard').classList.toggle('hidden', !lx);
+    if (lx) { $('larixLink').href = lx.link; $('srtTxt').textContent = `Ou configure na mão no Larix: ${lx.srt} (modo caller, latência 300 ms)`; }
+    paintTally();
+  }
+
+  /* ── luz de no ar ── */
+  function paintTally() {
+    const p = posto();
+    let st = 'off';
+    if (p?.kind === 'atem' && atem?.connected) st = atem.program === p.atemInput ? 'onair' : atem.preview === p.atemInput ? 'preview' : 'off';
+    if (p?.kind === 'sem-fio' && p.obsScene) st = obsProgram === p.obsScene ? 'onair' : 'off';
+    const t = $('tally');
+    t.className = 'tally' + (st === 'off' ? '' : ' ' + st);
+    t.textContent = st === 'onair' ? '● NO AR' : st === 'preview' ? 'PRÓXIMA (PREVIEW)' : (p?.kind === 'atem' && !atem?.connected ? 'ATEM DESCONECTADO' : 'FORA DO AR');
+    document.body.classList.toggle('onair', st === 'onair');
+    document.body.classList.toggle('preview', st === 'preview');
+  }
+  setInterval(async () => {
+    const p = posto();
+    if (p?.kind === 'sem-fio') { const r = await api('/api/equipe/tally'); obsProgram = r.obsProgram || ''; paintTally(); }
+  }, 1500);
+
+  $('btnSave').onclick = () => {
+    const name = $('name').value.trim();
+    if (!name) return $('name').focus();
+    // pessoa nova entra sem câmera (escolhe na aba Câmera se operar uma); quem já existia mantém a dela
+    const old = (cfg?.known || []).find((k) => k.name.toLowerCase() === name.toLowerCase());
+    me = { name, posto: old?.posto || '', atemInput: old?.atemInput || 2 };
+    localStorage.setItem(KEY, JSON.stringify(me));
+    api('/api/equipe/eu', me);
+    render();
+    if (ic.joined) ic.reconnected();
+  };
+  $('btnWho').onclick = () => {
+    if (!me || !confirm(`Sair como ${me.name} e entrar como outra pessoa?`)) return;
+    me = null; localStorage.removeItem(KEY); render(); scrollTo(0, 0);
+  };
+  $('name').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('btnSave').click(); });
+  $('myIn').onchange = (e) => {
+    me = { ...me, atemInput: Number(e.target.value) || 2 };
+    localStorage.setItem(KEY, JSON.stringify(me));
+    render();
+  };
+  $('btnAir').onclick = async () => {
+    const p = posto();
+    const r = await api('/api/equipe/air', p?.id === 'atem' ? { input: p.atemInput } : { posto: me.posto });
+    if (r.blocked) showLock(r.error);
+    say($('camMsg'), r.ok ? '✔ no ar' : r.error, r.ok);
+  };
+  $('btnBack').onclick = async () => { const r = await api('/api/equipe/back', { posto: me.posto }); say($('camMsg'), r.ok ? '✔ voltou' : r.error, r.ok); };
+  /* ── abas ── */
+  const TAB = 'aranas.equipe.aba';
+  // ?embed=1: aberto dentro da câmera do celular (gaveta do ☰) — sem intercom/câmera/cabeçalho
+  const EMBED = new URLSearchParams(location.search).get('embed') === '1';
+  if (EMBED) document.body.classList.add('embed');
+  let tab = 'rep'; // quem nunca usou abre no Replay (o mais usado)
+  try { tab = localStorage.getItem(TAB) || 'rep'; } catch { /* */ }
+  const tabParam = new URLSearchParams(location.search).get('tab');
+  if (tabParam) tab = tabParam;
+  if (EMBED && tab === 'eq') tab = 'rep';
+  function showTab(t) {
+    if (EMBED && t === 'eq') t = 'rep';
+    tab = t;
+    if (!EMBED) try { localStorage.setItem(TAB, t); } catch { /* */ }
+    // aba Telas: carrega o bate-papo e a lista de janelas (antes só carregava tocando na aba — abrindo o app já nela, ficava vazia)
+    if (t === 'tl') setTimeout(() => { bateLoad(); bateJanelas(); tvLoad(); }, 0);
+    $('paneEq').classList.toggle('hidden', t !== 'eq');
+    $('paneRep').classList.toggle('hidden', t !== 'rep');
+    $('paneSc').classList.toggle('hidden', t !== 'sc');
+    $('paneMu').classList.toggle('hidden', t !== 'mu');
+    $('paneEsc').classList.toggle('hidden', t !== 'esc');
+    $('paneSub').classList.toggle('hidden', t !== 'sub');
+    $('paneDr').classList.toggle('hidden', t !== 'dr');
+    $('paneCq').classList.toggle('hidden', t !== 'cq');
+    $('panePt').classList.toggle('hidden', t !== 'pt');
+    $('paneTb').classList.toggle('hidden', t !== 'tb');
+    $('paneMs').classList.toggle('hidden', t !== 'ms');
+    $('tabMs').classList.toggle('on', t === 'ms');
+    if (t === 'ms') msLoad(true);
+    $('tabTb').classList.toggle('on', t === 'tb');
+    if (t === 'tb') pollTb();
+    if (typeof presenca === 'function') setTimeout(presenca, 50);
+    $('tabPt').classList.toggle('on', t === 'pt');
+    if (t === 'pt') pollPt();
+    $('tabCq').classList.toggle('on', t === 'cq');
+    if (t === 'cq') pollCq();
+    $('tabDr').classList.toggle('on', t === 'dr');
+    if (t === 'dr') droneOpen(); else droneClose();
+    $('tabSub').classList.toggle('on', t === 'sub');
+    if (t === 'sub') loadState().then(paintSub);
+    $('tabEsc').classList.toggle('on', t === 'esc');
+    if (t === 'esc') loadState().then(paintEsc);
+    $('tabMu').classList.toggle('on', t === 'mu');
+    if (t === 'mu') loadMu();
+    $('tabEq').classList.toggle('on', t === 'eq');
+    $('tabRep').classList.toggle('on', t === 'rep');
+    $('tabSc').classList.toggle('on', t === 'sc');
+    if (t === 'sc') loadState();
+    $('paneTl').classList.toggle('hidden', t !== 'tl');
+    $('tabTl').classList.toggle('on', t === 'tl');
+    if (t === 'tl') loadCena();
+    if (t === 'rep') { pollRep(); pollHl(); tkAt = 0; loadTakes(); }
+  }
+  $('tabEq').onclick = () => showTab('eq');
+  $('tabRep').onclick = () => showTab('rep');
+  $('tabSc').onclick = () => showTab('sc');
+  $('tabMs').onclick = () => showTab('ms');
+  /* ── MASCOTE: toca na mão, prévia no próprio cartão, aleatório a cada X–Y min ── */
+  var msEst = null;
+  const msMinOp = [1, 2, 3, 5, 8, 10, 15, 20, 30, 45, 60];
+  async function msLoad(tudo) {
+    const r = await api('/api/mascote');
+    if (!r.ok) return;
+    const mudouLista = !msEst || JSON.stringify(msEst.videos) !== JSON.stringify(r.videos);
+    msEst = r;
+    $('msAleat').checked = r.aleatorio;
+    if (tudo) {
+      $('msMin').innerHTML = msMinOp.map((v) => `<option value="${v}" ${v === r.minMin ? 'selected' : ''}>${v}</option>`).join('');
+      $('msMax').innerHTML = msMinOp.map((v) => `<option value="${v}" ${v === r.maxMin ? 'selected' : ''}>${v}</option>`).join('');
+    }
+    $('msProx').textContent = r.aleatorio && r.proximoEm != null ? `próximo mascote em ~${Math.max(1, Math.round(r.proximoEm / 60000))} min` : r.aleatorio ? '' : 'aleatório desligado — só entra quando você tocar';
+    if (mudouLista || tudo) {
+      $('msGrid').innerHTML = r.videos.length ? r.videos.map((v) => `<div class="msCard" data-ms="${v.id}">
+        <div class="msPrev" data-prev="${v.id}">${v.pronto ? `<img src="mascote/${v.id}.jpg?f=${Date.now() >> 16}" alt=""><span class="play">▶ prévia</span>` : `<div class="msEspera">⏳ tirando o fundo verde…</div>`}</div>
+        <div class="msNome">${escTV(v.nome)}</div>
+        <button class="air" data-tocar="${v.id}" ${v.pronto ? '' : 'disabled'}>▶ NO AR</button>
+        <label><input type="checkbox" data-sort="${v.id}" ${v.sorteio ? 'checked' : ''}> no sorteio</label></div>`).join('')
+        : '<div class="hint">nenhum vídeo na pasta 13 - Mascote/Videos</div>';
+      $('msGrid').querySelectorAll('[data-prev]').forEach((d) => (d.onclick = () => {
+        if (!d.querySelector('img')) return;
+        d.innerHTML = `<video src="mascote/${d.dataset.prev}-previa.mp4" autoplay muted playsinline></video>`;
+        const vv = d.querySelector('video');
+        vv.onended = () => { msEst = null; msLoad(true); };
+      }));
+      $('msGrid').querySelectorAll('[data-tocar]').forEach((b) => (b.onclick = async () => {
+        const x = await api('/api/mascote/tocar', { id: b.dataset.tocar });
+        say($('msMsg'), x.ok ? '✔ mascote no ar' : x.error, x.ok);
+        if (navigator.vibrate) navigator.vibrate(40);
+        msLoad();
+      }));
+      $('msGrid').querySelectorAll('[data-sort]').forEach((c) => (c.onchange = () => api('/api/mascote/sorteio', { id: c.dataset.sort, on: c.checked })));
+    }
+    $('msGrid').querySelectorAll('[data-ms]').forEach((c) => c.classList.toggle('tocando', c.dataset.ms === r.tocando));
+  }
+  const msCfg = async () => { await api('/api/mascote/config', { aleatorio: $('msAleat').checked, minMin: Number($('msMin').value), maxMin: Number($('msMax').value) }); msLoad(true); };
+  $('msAleat').onchange = msCfg;
+  $('msMin').onchange = msCfg;
+  $('msMax').onchange = msCfg;
+  $('msParar').onclick = async () => { await api('/api/mascote/parar', {}); say($('msMsg'), '✔ saiu da tela', true); msLoad(); };
+  setInterval(() => { if (tab === 'ms') msLoad(); }, 4000);
+  $('repLiveGame').onclick = () => { if (document.body.classList.contains('embed')) __demoIr('/replay-mobile?live=1'); else __demoIr('/replay-mobile?live=1'); };
+  $('repStudio').onclick = () => { if (document.body.classList.contains('embed')) __demoIr('/replay-mobile'); else __demoIr('/replay-mobile'); };
+  $('tabTl').onclick = () => showTab('tl');
+  $('tabMu').onclick = () => showTab('mu');
+  $('tabEsc').onclick = () => showTab('esc');
+  $('tabSub').onclick = () => showTab('sub');
+  $('tabCq').onclick = () => showTab('cq');
+  $('tabPt').onclick = () => showTab('pt');
+  /* ── DISPUTA DE PÊNALTIS (aba Placar): começa, marca cada cobrança (o time da vez é automático), desfaz ── */
+  async function penLoad() {
+    const r = await api('/api/penalties');
+    if (!r.ok) return;
+    const p = r.penalties || { active: false, kicks: [] }, s = r.status || {};
+    const temDisputa = (p.kicks || []).length > 0 || p.active;
+    $('penIdle').classList.toggle('hidden', temDisputa);
+    $('penOn').classList.toggle('hidden', !temDisputa);
+    if (!st) return;
+    const H = short(st.teams.home), A = short(st.teams.away);
+    $('penStartH').textContent = `${H} (casa)`;
+    $('penStartA').textContent = `${A} (visitante)`;
+    if (!temDisputa) return;
+    $('penPlacar').textContent = `${H} ${s.score?.home ?? 0} × ${s.score?.away ?? 0} ${A}`;
+    $('penVez').innerHTML = s.winner ? `🏆 <b>${s.winner === 'home' ? H : A}</b> venceu nos pênaltis` : `vez de <b>${s.next === 'home' ? H : A}</b>${s.suddenDeath ? ' · morte súbita' : ''}`;
+    $('penGol').disabled = $('penErrou').disabled = !!s.winner;
+    $('penTela').textContent = p.active ? 'esconder da tela' : 'mostrar na tela';
+    $('penTela').dataset.on = p.active ? '1' : '';
+  }
+  const penAcao = async (url, body, ok) => { const r = await api(url, body || {}); say($('penMsg'), r.ok ? ok : r.error, r.ok); if (navigator.vibrate) navigator.vibrate(40); penLoad(); };
+  $('penStartH').onclick = () => penAcao('/api/penalties/start', { first: 'home' }, '✔ disputa no ar — casa bate primeiro');
+  $('penStartA').onclick = () => penAcao('/api/penalties/start', { first: 'away' }, '✔ disputa no ar — visitante bate primeiro');
+  $('penGol').onclick = () => penAcao('/api/penalties/kick', { scored: true }, '✔ gol');
+  $('penErrou').onclick = () => penAcao('/api/penalties/kick', { scored: false }, '✔ perdeu');
+  $('penUndo').onclick = () => penAcao('/api/penalties/undo', {}, '✔ última cobrança desfeita');
+  $('penTela').onclick = () => penAcao('/api/penalties/show', { active: !$('penTela').dataset.on }, $('penTela').dataset.on ? '✔ saiu da tela' : '✔ na tela');
+  let penArm = 0;
+  $('penNova').onclick = () => {
+    if (Date.now() - penArm > 3000) { penArm = Date.now(); $('penNova').textContent = 'toque de novo pra APAGAR as cobranças'; setTimeout(() => { $('penNova').textContent = 'recomeçar a disputa'; }, 3000); return; }
+    $('penIdle').classList.remove('hidden'); $('penOn').classList.add('hidden');
+    say($('penMsg'), 'escolha quem bate primeiro', true);
+  };
+  setInterval(() => { if (tab === 'sc') penLoad(); }, 2500);
+  /* ── BATE-PAPO / ENTREVISTA: escolhe 2 ou 3 (a ordem do toque = a 1ª fica grande quando são 3) ── */
+  let bateSel = [], bateCels = [];
+  function pintaBate() {
+    const op = [{ id: 'atem', nome: '🎙 Comentaristas (ATEM)' }, ...bateCels.map((c) => ({ id: `cel:${c.id}`, nome: `📱 ${c.name}${c.online ? '' : ' (desligado)'}` })), { id: 'meet', nome: '💻 Google Meet' }];
+    $('bateFontes').innerHTML = op.map((o) => { const i = bateSel.indexOf(o.id); return `<button data-bf="${o.id}" class="${i >= 0 ? 'on' : ''}">${i >= 0 ? `<span class="n">${i + 1}</span>` : ''}${o.nome}</button>`; }).join('');
+    $('bateFontes').querySelectorAll('[data-bf]').forEach((b) => (b.onclick = () => {
+      const id = b.dataset.bf;
+      bateSel = bateSel.includes(id) ? bateSel.filter((x) => x !== id) : bateSel.length >= 3 ? bateSel : [...bateSel, id];
+      pintaBate();
+    }));
+  }
+  async function bateLoad() {
+    const r = await api('/api/bate');
+    if (!r.ok) return;
+    bateCels = r.celulares || [];
+    if (r.on && r.fontes?.length && !bateSel.length) bateSel = r.fontes;
+    $('bateAr').textContent = r.on ? '● NO AR — toque pra trocar' : 'NO AR';
+    $('bateSeguir').checked = !!r.seguir;
+    pintaBate();
+  }
+  async function bateJanelas() {
+    const r = await api('/api/bate/meet/janelas');
+    if (!r.ok) return say($('bateMsg'), r.error, false);
+    const atual = $('bateJanela').value;
+    $('bateJanela').innerHTML = '<option value="">— escolha a janela do Meet —</option>' + r.janelas.map((j) => `<option value="${j.valor.replace(/"/g, '&quot;')}">${j.nome}</option>`).join('');
+    if (atual && r.janelas.some((j) => j.valor === atual)) $('bateJanela').value = atual;
+    if (!r.janelas.some((j) => /meet/i.test(j.nome))) say($('bateMsg'), 'não achei janela do Meet aberta no Chrome — abra a chamada e toque 🔄', false);
+  }
+  $('bateAr').onclick = async () => {
+    if (bateSel.length < 2) return say($('bateMsg'), 'escolha 2 ou 3 imagens', false);
+    const r = await api('/api/bate', { fontes: bateSel });
+    say($('bateMsg'), r.ok ? '✔ bate-papo no ar' : r.error, r.ok);
+    bateLoad();
+  };
+  $('bateSair').onclick = async () => { const r = await api('/api/bate/sair', {}); say($('bateMsg'), r.ok ? '✔ voltou pro jogo' : r.error, r.ok); bateLoad(); };
+  $('bateJanRef').onclick = async () => { await bateJanelas(); say($('bateMsg'), '✔ lista de janelas atualizada', true); };
+  $('bateJanela').onchange = async (e) => {
+    if (!e.target.value) return;
+    const r = await api('/api/bate/meet/janela', { valor: e.target.value });
+    say($('bateMsg'), r.ok ? '✔ janela do Meet escolhida — agora 🎯 ENQUADRAR' : r.error, r.ok);
+  };
+  $('bateEnq').onclick = async () => { say($('bateMsg'), 'procurando o rosto…', true); const r = await api('/api/bate/meet/enquadrar', {}); say($('bateMsg'), r.ok ? '✔ enquadrado na pessoa' : r.error, r.ok); };
+  $('bateSeguir').onchange = async (e) => { await api('/api/bate/meet/seguir', { on: e.target.checked }); };
+  /* ── MEET TV: o Chrome da transmissão entra na chamada; toca no NOME e só essa pessoa aparece ── */
+  var tvTimer = 0;
+  const escTV = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  async function tvLoad() {
+    const r = await api('/api/bate/tv');
+    if (!r.ok) return;
+    if (r.link && !$('tvLink').value && document.activeElement !== $('tvLink')) $('tvLink').value = r.link.replace('https://', '');
+    const outros = (r.participantes || []).filter((p) => !p.eu);
+    const FASE = {
+      fechado: 'Meet fechado — cole o link e toque ABRIR',
+      entrada: 'Meet aberto no PC — toque <b>ENTRAR NA CHAMADA</b>',
+      esperando: '⏳ pedindo pra entrar — <b>aceite "Copa Aranãs TV"</b> na chamada',
+      chamada: outros.length ? `<b>● na chamada</b> — toque em quem vai aparecer` : '<b>● na chamada</b> — ninguém mais entrou ainda',
+      outra: 'carregando o Meet…',
+    };
+    $('tvFase').innerHTML = FASE[r.fase] || '';
+    $('tvEntrar').classList.toggle('hidden', r.fase !== 'entrada');
+    $('tvPessoas').innerHTML = r.fase !== 'chamada' ? '' : [
+      ...outros.map((p) => `<button data-tvp="${escTV(p.id)}" class="${r.mostrando === p.id ? 'on' : ''} ${p.video ? '' : 'sem'}">👤 ${escTV(p.nome)}${p.video ? '' : ' (sem câmera)'}</button>`),
+      `<button data-tvp="" class="${r.mostrando ? '' : 'on'}">▦ todos (grade do Meet)</button>`,
+    ].join('');
+    $('tvPessoas').querySelectorAll('[data-tvp]').forEach((b) => (b.onclick = async () => {
+      const x = await api('/api/bate/tv/mostrar', { id: b.dataset.tvp || null });
+      say($('bateMsg'), x.ok ? (b.dataset.tvp ? `✔ mostrando ${b.textContent.replace('👤 ', '')} — ponha o 💻 Google Meet no bate-papo` : '✔ grade do Meet') : x.error, x.ok);
+      tvLoad();
+    }));
+  }
+  $('tvAbrir').onclick = async () => {
+    say($('bateMsg'), 'abrindo o Meet no PC…', true);
+    const r = await api('/api/bate/tv/abrir', { link: $('tvLink').value });
+    say($('bateMsg'), r.ok ? '✔ Meet aberto no PC (não minimize a janela)' : r.error, r.ok);
+    setTimeout(tvLoad, 3000);
+  };
+  $('tvEntrar').onclick = async () => {
+    const r = await api('/api/bate/tv/entrar', {});
+    say($('bateMsg'), r.ok ? '✔ pedido enviado — aceite "Copa Aranãs TV" na chamada' : r.error, r.ok);
+    setTimeout(tvLoad, 1500);
+  };
+  $('tvFechar').onclick = async () => { await api('/api/bate/tv/fechar', {}); say($('bateMsg'), '✔ Chrome da TV fechado', true); setTimeout(tvLoad, 1000); };
+  tvTimer = setInterval(() => { if (tab === 'tl') tvLoad(); }, 3000);
+  /* ── ⚙ MENUS: cada celular escolhe as abas que usa (menos abas = botões maiores) ── */
+  const MENUS = 'aranas.equipe.menus';
+  const abas = () => [...document.querySelectorAll('nav.tabs > button')].filter((b) => b.id !== 'tabEq' || !EMBED);
+  function aplicaMenus() {
+    let esc = null;
+    try { esc = JSON.parse(localStorage.getItem(MENUS) || 'null'); } catch { /* */ }
+    const todas = abas();
+    let vis = 0;
+    // nenhuma aba salva existe mais (versão nova renomeou): mostra todas em vez de um menu vazio
+    if (esc && !todas.some((b) => esc.includes(b.id))) esc = null;
+    let conhecidas = null;
+    try { conhecidas = JSON.parse(localStorage.getItem(MENUS + '.todas') || 'null'); } catch { /* */ }
+    // aba que não existia quando o menu foi salvo (ex: Mascote) aparece até a pessoa escolher
+    // menu salvo antes desta versão: conhecia todas menos a Mascote
+    if (esc && !conhecidas) conhecidas = todas.map((b) => b.id).filter((id) => id !== 'tabMs');
+    if (esc) esc = [...esc, ...todas.map((b) => b.id).filter((id) => !conhecidas.includes(id))];
+    for (const b of todas) { const on = !esc || esc.includes(b.id); b.classList.toggle('hidden', !on); if (on) vis++; }
+    document.body.classList.toggle('menu3', vis <= 3);
+    document.body.classList.toggle('menu6', vis > 3 && vis <= 6);
+    // a aba aberta sumiu do menu: abre a primeira que ficou
+    const cur = todas.find((b) => b.classList.contains('on'));
+    if (cur && cur.classList.contains('hidden')) { const f = todas.find((b) => !b.classList.contains('hidden')); f?.click(); }
+  }
+  $('btnMenus').onclick = () => {
+    let esc = null;
+    try { esc = JSON.parse(localStorage.getItem(MENUS) || 'null'); } catch { /* */ }
+    // marcada = está aparecendo agora (inclui aba nova que o menu salvo ainda não conhecia)
+    $('menuLista').innerHTML = abas().map((b) => `<label><input type="checkbox" data-m="${b.id}" ${!esc || !b.classList.contains('hidden') ? 'checked' : ''}> ${b.textContent.trim()}</label>`).join('');
+    $('menuCfg').classList.add('on');
+  };
+  $('menuOk').onclick = () => {
+    const sel = [...$('menuLista').querySelectorAll('[data-m]')].filter((c) => c.checked).map((c) => c.dataset.m);
+    if (!sel.length) return say($('menuMsg'), 'deixe pelo menos um menu', false);
+    try { localStorage.setItem(MENUS, JSON.stringify(sel)); localStorage.setItem(MENUS + '.todas', JSON.stringify(abas().map((b) => b.id))); } catch { /* */ }
+    $('menuCfg').classList.remove('on');
+    aplicaMenus();
+  };
+  $('menuCfg').onclick = (e) => { if (e.target === $('menuCfg')) $('menuCfg').classList.remove('on'); };
+  // aplicaMenus() roda no fim do carregamento (depois do showTab inicial)
+
+  /* ── ⚽ TRILHA DO GOL: música da Copa (só instrumental) por N s, saindo suave; tocar de novo = já sai ── */
+  let golEst = { tocando: false, restaMs: 0, seg: 20 }, golAt = 0;
+  async function golPoll() { const r = await api('/api/musica/gol'); if (r.ok) { golEst = r; golAt = performance.now(); fillSel($('golSeg'), [10, 15, 20, 30, 45, 60], r.seg, (v) => `${v} segundos`); } }
+  setInterval(() => {
+    const resta = golEst.tocando ? Math.max(0, golEst.restaMs - (performance.now() - golAt)) : 0;
+    const txt = resta > 0 ? `⚽ TOCANDO · ${Math.ceil(resta / 1000)} s (toque pra parar)` : '⚽ TRILHA DO GOL';
+    const b = $('btnGolMus');
+    if (b.textContent !== txt) { b.classList.toggle('on', resta > 0); b.textContent = txt; }
+  }, 300);
+  setInterval(() => { if (tab === 'rep') golPoll(); }, 3000);
+  golPoll();
+  $('btnGolMus').onclick = async () => {
+    if (navigator.vibrate) navigator.vibrate(50);
+    const r = await api('/api/musica/gol', {});
+    if (!r.ok) say($('repMsg'), r.error, false);
+    else say($('repMsg'), r.saindo ? '✔ trilha saindo' : `✔ trilha do gol tocando (${r.seg} s)`, true);
+    golPoll();
+  };
+  $('golSeg').onchange = async (e) => { const r = await api('/api/musica/cfg', { golSeg: Number(e.target.value) }); say($('repMsg'), r.ok ? '✔ duração da trilha salva' : r.error, r.ok); golPoll(); };
+  /* comentários do YouTube do lado do jogo (tela dividida) — toque de novo = sai */
+  $('tlChat').onclick = async () => {
+    const r = await api('/api/dividida', { fonte: 'chat' });
+    const st2 = await api('/api/dividida');
+    $('tlChat').classList.toggle('on', !!(st2.on && st2.fonte === 'chat'));
+    say($('tlMsg') || $('repMsg'), r.ok ? (st2.on ? '✔ comentários no ar (toque de novo pra sair)' : '✔ voltou pro jogo') : r.error, r.ok);
+  };
+  /* ── LOCUÇÃO DO PATROCINADOR: botão flutuante (só na aba Patrocínio) ── */
+  let locEst = { gravando: false, secs: 0 }, locAt = 0;
+  async function locPoll() {
+    const r = await api('/api/locucao');
+    if (!r.ok) return;
+    locEst = r; locAt = performance.now();
+    if (r.ultimo && r.ultimo.estado !== 'salvando' && locPoll.visto !== r.ultimo.file + r.ultimo.estado) {
+      locPoll.visto = r.ultimo.file + r.ultimo.estado;
+      if (locPoll.esperando) say($('ptMsg'), r.ultimo.estado === 'pronto' ? `✔ locução salva: ${r.ultimo.marca} (${r.ultimo.secs} s)` : `⚠ locução não salvou: ${r.ultimo.erro}`, r.ultimo.estado === 'pronto');
+      locPoll.esperando = false;
+    }
+  }
+  setInterval(() => {
+    $('locBtn').classList.toggle('hidden', tab !== 'pt');
+    if (tab !== 'pt') return;
+    const s = locEst.gravando ? Math.floor(locEst.secs + (performance.now() - locAt) / 1000) : 0;
+    $('locBtn').classList.toggle('on', !!locEst.gravando);
+    $('locBtn').textContent = locEst.gravando ? `⏹ PARAR · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}${locEst.marca ? ' · ' + locEst.marca : ''}` : '⏺ GRAVAR LOCUÇÃO';
+  }, 500);
+  setInterval(() => { if (tab === 'pt') locPoll(); }, 2000);
+  $('locBtn').onclick = async () => {
+    $('locBtn').disabled = true;
+    const r = await api(locEst.gravando ? '/api/locucao/fim' : '/api/locucao/inicio', {});
+    $('locBtn').disabled = false;
+    if (!r.ok) say($('ptMsg'), r.error, false);
+    else if (locEst.gravando) { locPoll.esperando = true; say($('ptMsg'), `salvando a locução de ${r.marca}…`, true); }
+    else say($('ptMsg'), '⏺ gravando — toque na logo da empresa e fale', true);
+    if (navigator.vibrate) navigator.vibrate(60);
+    await locPoll();
+  };
+  $('tabTb').onclick = () => showTab('tb');
+  $('tabDr').onclick = () => showTab('dr');
+
+  /* ── ABA SUBSTITUIÇÃO ── */
+  const SUBKEY = () => `aranas.subs.${st?.match?.ifutId || nrm(st?.teams?.home?.name) + 'x' + nrm(st?.teams?.away?.name)}`;
+  const subDB = () => { try { return JSON.parse(localStorage.getItem(SUBKEY()) || '{}'); } catch { return {}; } };
+  const subSave = (d) => { try { localStorage.setItem(SUBKEY(), JSON.stringify(d)); } catch { /* */ } };
+  let subSide = 'home', subOut = null, subIn = null;
+  function paintSub() {
+    if (!st) return;
+    for (const [side, id] of [['home', 'subHome'], ['away', 'subAway']]) {
+      const c = st.teams[side].color || '#e3a8f0';
+      const on = side === subSide;
+      $(id).textContent = short(st.teams[side]);
+      Object.assign($(id).style, on ? { background: c, color: ink(c), borderColor: c } : { background: '', color: '', borderColor: '' });
+    }
+    $('subOutBtn').textContent = subOut ? `${subOut.number ?? ''} ${subOut.name}` : 'Sai';
+    $('subInBtn').textContent = subIn ? `${subIn.number ?? ''} ${subIn.name}` : 'Entra';
+    const d = subDB();
+    const list = d.pending || [];
+    $('subList').innerHTML = list.length ? list.map((x, i) => `<div class="subItem"><div class="t"><b>${short(st.teams[x.team])}</b><br><i>↓ ${x.out.number ?? ''} ${x.out.name}</i><br><em>↑ ${x.in.number ?? ''} ${x.in.name}</em></div><button class="air" data-air="${i}" data-ic="live" style="font-size:14px">No ar</button><button class="ghost" data-del="${i}" data-ic="x" aria-label="apagar"></button></div>`).join('') : '<div class="hint">nenhuma preparada</div>';
+    $('subList').querySelectorAll('[data-air]').forEach((b) => (b.onclick = () => airSub(Number(b.dataset.air))));
+    $('subList').querySelectorAll('[data-del]').forEach((b) => (b.onclick = () => { const d2 = subDB(); d2.pending.splice(Number(b.dataset.del), 1); subSave(d2); paintSub(); }));
+  }
+  // quem está em campo agora (titulares − quem saiu + quem entrou) e quem ainda pode entrar
+  async function fieldNow(side) {
+    const pl = await playersOf(side);
+    const d = subDB();
+    const done = (d.done || []).filter((x) => x.team === side);
+    const key = (p) => `${p.number}|${nrm(p.name)}`;
+    const outK = new Set(done.map((x) => key(x.out)));
+    const inK = new Set(done.map((x) => key(x.in)));
+    const field = [...pl.starters.filter((p) => !outK.has(key(p))), ...pl.reserves.filter((p) => inK.has(key(p)))];
+    const bench = pl.reserves.filter((p) => !inK.has(key(p)));
+    return { field, bench, extra: pl.extra || [], all: [...pl.starters, ...pl.reserves, ...(pl.extra || [])] };
+  }
+  document.querySelectorAll('#subSide [data-side]').forEach((b) => (b.onclick = () => { subSide = b.dataset.side; subOut = subIn = null; paintSub(); }));
+  $('subOutBtn').onclick = async () => {
+    const f = await fieldNow(subSide);
+    const p = await pickPlayer('🔻 Quem SAI?', 'jogadores em campo agora', subSide, null, [['EM CAMPO', f.field.length ? f.field : f.all], ['OUTROS DO ELENCO', f.field.length ? f.extra : []]]);
+    if (p) { subOut = p; paintSub(); }
+  };
+  $('subInBtn').onclick = async () => {
+    const f = await fieldNow(subSide);
+    const p = await pickPlayer('🔺 Quem ENTRA?', 'reservas que ainda não entraram', subSide, null, [['RESERVAS', f.bench.length ? f.bench : f.all], ['ELENCO (fora da escalação)', f.bench.length ? f.extra : []]]);
+    if (p) { subIn = p; paintSub(); }
+  };
+  $('subAdd').onclick = () => {
+    if (!subOut || !subIn) return say($('subMsg'), 'escolha quem SAI e quem ENTRA', false);
+    const d = subDB();
+    d.pending = [...(d.pending || []), { team: subSide, out: subOut, in: subIn, at: Date.now() }];
+    subSave(d);
+    subOut = subIn = null;
+    say($('subMsg'), '✔ preparada — aperte ▶ NO AR quando for a hora', true);
+    paintSub();
+  };
+  function airSub(i) {
+    const d = subDB();
+    const x = d.pending?.[i];
+    if (!x) return;
+    send({ type: 'cue', cue: { name: 'sub', team: x.team, playerOut: x.out.name, numberOut: x.out.number, photoOut: x.out.photo, playerIn: x.in.name, numberIn: x.in.number, photoIn: x.in.photo } });
+    // foi pro ar: sai da lista e fica registrada (quem saiu não aparece mais em campo)
+    d.pending.splice(i, 1);
+    d.done = [...(d.done || []), x];
+    subSave(d);
+    say($('subMsg'), `✔ substituição no ar: sai ${x.out.name}, entra ${x.in.name}`, true);
+    if (navigator.vibrate) navigator.vibrate(60);
+    paintSub();
+  }
+  $('escGear').onclick = () => {
+    const f = $('escFrame');
+    if (!f.src) f.src = '/painel/?only=escalacao';
+    $('escSheet').style.display = 'flex';
+  };
+  $('escSheetClose').onclick = async () => { $('escSheet').style.display = 'none'; await loadState(); paintEsc(); };
+  $('btnCamMe').onclick = () => {
+    if (ic.joined) ic.leave(); // o intercom continua na tela da câmera (ela tem o dela)
+    __demoIr(`/cel?nome=${encodeURIComponent(me?.name || '')}&app=1`);
+  };
+
+  /* ── ABA ESCALAÇÃO ── */
+  /** função no campo pela formação e pela ordem da escalação (igual a shared/src/funcao.ts) */
+  function funcaoNaFormacao(formation, index) {
+    if (index === 0) return 'GOLEIRO';
+    const linhas = String(formation || '').split('-').map(Number).filter((n) => n > 0);
+    if (!linhas.length) return '';
+    let i = index - 1, L = 0;
+    while (L < linhas.length && i >= linhas[L]) { i -= linhas[L]; L++; }
+    if (L >= linhas.length) return '';
+    const n = linhas[L], k = linhas.length;
+    const ponta = (e, d, m) => (i === 0 ? e : i === n - 1 ? d : m);
+    if (L === 0) return n === 4 ? ponta('LATERAL ESQ.', 'LATERAL DIR.', 'ZAGUEIRO') : n >= 5 ? ponta('ALA ESQ.', 'ALA DIR.', 'ZAGUEIRO') : 'ZAGUEIRO';
+    if (L === k - 1 && k > 1) return n === 1 ? 'CENTROAVANTE' : n === 3 ? ponta('PONTA ESQ.', 'PONTA DIR.', 'CENTROAVANTE') : 'ATACANTE';
+    if (k === 3) {
+      if (n <= 2) return 'VOLANTE';
+      if (n === 3) return i === 1 ? 'VOLANTE' : 'MEIO-CAMPO';
+      if (n === 4) return ponta('MEIA ESQ.', 'MEIA DIR.', 'VOLANTE');
+      return ponta('ALA ESQ.', 'ALA DIR.', i === Math.floor(n / 2) ? 'VOLANTE' : 'MEIO-CAMPO');
+    }
+    if (L === 1) return n <= 2 ? 'VOLANTE' : i === Math.floor(n / 2) ? 'VOLANTE' : 'MEIO-CAMPO';
+    return n === 3 ? ponta('MEIA ESQ.', 'MEIA DIR.', 'MEIA') : 'MEIA';
+  }
+  function paintEsc() {
+    if (!st) return;
+    const b = st.lineupBoard || {};
+    const side = b.side || 'home';
+    const store = st.lineupStore || {};
+    $('escHome').textContent = short(st.teams.home);
+    $('escAway').textContent = short(st.teams.away);
+    $('escHome').classList.toggle('on', side === 'home');
+    $('escAway').classList.toggle('on', side === 'away');
+    const starters = b.starters || [];
+    const step = b.step || 0;
+    const shown = Math.max(0, step - 1); // passo 1 = campo; 2.. = titulares
+    $('escStatus').textContent = !b.visible ? 'fora do ar' : step <= 1 ? 'no ar: campo + comissão + reservas' : `no ar: ${shown} de ${starters.length} titulares`;
+    $('escNext').textContent = !b.visible ? 'Mostrar a escalação' : shown >= starters.length ? 'Todos na tela' : `Próximo: ${starters[shown]?.number ?? ''} ${starters[shown]?.name ?? ''}`;
+    $('escList').innerHTML = starters.length
+      ? starters.map((p, i) => `<div class="p ${b.visible && i < shown ? 'shown' : b.visible && i === shown ? 'next' : ''}"><b>${p.number}</b>${p.name}<span class="fn">${funcaoNaFormacao(b.formation, i)}</span></div>`).join('')
+      : '<div class="hint">escalação ainda não montada — toque na engrenagem</div>';
+  }
+  const escApi = async (path, body, okMsg) => {
+    const r = await api(path, body);
+    say($('escMsg'), r.ok ? okMsg : (r.error || 'não deu certo'), r.ok);
+    await loadState();
+    paintEsc();
+  };
+  document.querySelectorAll('#paneEsc .sideSel [data-side]').forEach((b) => (b.onclick = async () => {
+    const r = await api('/api/lineup/side', { side: b.dataset.side });
+    say($('escMsg'), r.ok ? '✔ time trocado' : 'a escalação desse time ainda não foi montada — monte no painel (aba Escalação)', r.ok);
+    await loadState(); paintEsc();
+  }));
+  $('escNext').onclick = () => escApi('/api/lineup/step', { op: 'next' }, '✔');
+  $('escPrev').onclick = () => escApi('/api/lineup/step', { op: 'prev' }, '✔');
+  $('escAll').onclick = () => escApi('/api/lineup/step', { op: 'end' }, '✔ todos na tela');
+  $('escOff').onclick = () => escApi('/api/lineup/visible', { visible: false }, '✔ escalação fora do ar');
+  const cue = (c, okMsg) => { send({ type: 'cue', cue: c }); say($('escMsg'), okMsg, true); if (navigator.vibrate) navigator.vibrate(40); };
+  $('lowHome').onclick = () => cue({ name: 'lineup:show', team: 'home' }, '✔ escalação da casa no rodapé');
+  $('lowAway').onclick = () => cue({ name: 'lineup:show', team: 'away' }, '✔ escalação do visitante no rodapé');
+  $('lowOff').onclick = () => cue({ name: 'lineup:hide' }, '✔ escalação do rodapé saiu');
+  $('benchHome').onclick = () => cue({ name: 'bench', team: 'home' }, '✔ reservas da casa');
+  $('benchAway').onclick = () => cue({ name: 'bench', team: 'away' }, '✔ reservas do visitante');
+
+  /* ── ABA MÚSICA ── */
+  let mu = null;
+  const nice = (f) => f.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ');
+  const mmss = (sec) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+  async function loadMu() {
+    const r = await api('/api/musica');
+    if (!r.ok) return;
+    mu = r;
+    for (const k of ['hino', 'copa', 'jogo']) {
+      const box = $('mu-' + k);
+      const list = r.files[k];
+      const key = list.join('|') + (r.now ? r.now.kind + r.now.file : '');
+      if (box.dataset.key !== key) {
+        box.dataset.key = key;
+        box.innerHTML = list.length
+          ? list.map((f) => `<button data-k="${k}" data-f="${encodeURIComponent(f)}" data-ic="play" class="${r.now && r.now.kind === k && r.now.file === f ? 'on' : ''}">${nice(f)}</button>`).join('')
+          : `<div class="hint">pasta vazia — toque na pasta pra escolher</div>`;
+        box.querySelectorAll('[data-f]').forEach((b) => (b.onclick = async () => {
+          const x = await api('/api/musica/play', { kind: b.dataset.k, file: decodeURIComponent(b.dataset.f) });
+          say($('scMsg'), x.ok ? '✔ tocando' : x.error, x.ok);
+          if (!x.ok) alertMu(x.error);
+          loadMu();
+        }));
+      }
+    }
+    // músicas do jogo: PASTA ou SPOTIFY
+    const sp = r.fonteJogo === 'spotify';
+    $('muFonte').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.f === r.fonteJogo));
+    $('muSp').classList.toggle('hidden', !sp);
+    $('mu-jogo').classList.toggle('hidden', sp);
+    $('muShuffle').textContent = sp ? '▶ Tocar o Spotify' : 'Tocar todas';
+    $('muSpInfo').textContent = 'deixe a playlist aberta no Spotify do PC — aqui é só tocar / pausar / próxima. Sai só nas caixas do PC (não vai pra live).';
+    const n = r.now;
+    $('muNow').classList.toggle('hidden', !n);
+    if (n) {
+      $('muTitle').innerHTML = `${n.paused ? '⏸' : '▶'} ${n.spotify ? n.file.replace(/</g, '&lt;') : nice(n.file)} <span class="tag ${n.live ? 'live' : 'pc'}">${n.spotify ? 'SPOTIFY · SÓ NO PC' : n.live ? 'NA LIVE' : 'SÓ NO PC'}</span>`;
+      $('muProg').style.width = n.dur ? `${Math.min(100, (n.pos / n.dur) * 100)}%` : '0';
+      $('muPause').dataset.ic = n.paused ? 'play' : 'pause';
+      $('muPause').textContent = n.paused ? 'Continuar' : (n.dur ? mmss(n.pos / 1000) + ' / ' + mmss(n.dur / 1000) : 'Pausar');
+      $('muNext').classList.toggle('hidden', n.kind !== 'jogo');
+    }
+    $('muWarn').classList.toggle('hidden', !r.desktopOn);
+    $('muWarn').textContent = '⚠ O "Áudio do desktop" está LIGADO no OBS: as músicas do jogo (só no PC) podem vazar pra live. No OBS, deixe o Áudio do desktop mudo.';
+    if (document.activeElement !== $('muVolLive')) $('muVolLive').value = r.vol.live;
+    if (document.activeElement !== $('muVolPc')) $('muVolPc').value = r.vol.pc;
+    $('muFolders').innerHTML = `pastas: hino → ${r.folders.hino}<br>copa → ${r.folders.copa}<br>jogo → ${r.folders.jogo}`;
+  }
+  function alertMu(t) { $('muWarn').classList.remove('hidden'); $('muWarn').textContent = t; }
+  setInterval(() => { if (tab === 'mu') loadMu(); }, 1000);
+  $('muShuffle').onclick = async () => { const x = await api('/api/musica/play', { kind: 'jogo' }); if (!x.ok) alertMu(x.error); loadMu(); };
+  $('muFonte').querySelectorAll('button').forEach((b) => (b.onclick = async () => { await api('/api/musica/fonte', { fonte: b.dataset.f }); loadMu(); }));
+  $('muPause').onclick = async () => { await api(mu?.now?.paused ? '/api/musica/resume' : '/api/musica/pause', {}); loadMu(); };
+  $('muNext').onclick = async () => { await api('/api/musica/next', {}); loadMu(); };
+  $('muStop').onclick = async () => { await api('/api/musica/stop', {}); loadMu(); };
+  $('muVolLive').onchange = (e) => api('/api/musica/volume', { which: 'live', value: Number(e.target.value) });
+  $('muVolPc').onchange = (e) => api('/api/musica/volume', { which: 'pc', value: Number(e.target.value) });
+  document.querySelectorAll('[data-pick]').forEach((b) => (b.onclick = async () => {
+    say($('scMsg'), 'abrindo a janela de escolher pasta no PC…', true);
+    alertMu('📁 a janela pra escolher a pasta abriu no PC da transmissão');
+    const x = await api('/api/musica/pick', { kind: b.dataset.pick });
+    $('muWarn').classList.add('hidden');
+    loadMu();
+    void x;
+  }));
+
+  /* ── ABA PLACAR ── */
+  let st = null; // estado do placar (chega pelo WebSocket; na 1ª vez pelo /api/state)
+  const PERIOD = { PRE: 'antes do jogo', '1H': '1º TEMPO', HT: 'INTERVALO', '2H': '2º TEMPO', FT: 'FIM DE JOGO', ET1: 'PRORROGAÇÃO 1', ET2: 'PRORROGAÇÃO 2', PEN: 'PÊNALTIS' };
+  const NEXT = { PRE: 'kickoff', '1H': 'halftime', HT: 'second_half', '2H': 'fulltime' };
+  async function loadState() { const r = await api('/api/state'); if (r && r.teams) { st = r; paintSc(); } }
+  const short = (t) => (t.shortName || t.name || '').toUpperCase();
+  function paintSc() {
+    if (!st) return;
+    $('scHome').textContent = short(st.teams.home);
+    $('scAway').textContent = short(st.teams.away);
+    $('scScore').textContent = `${st.score.home} × ${st.score.away}`;
+    $('scHomeGoal').textContent = `GOL ${short(st.teams.home)}`;
+    paintGoalBtns();
+    $('scAwayGoal').textContent = `GOL ${short(st.teams.away)}`;
+    const c = st.clock;
+    const ms = c.baseMs + (c.running ? Date.now() - c.updatedAt : 0);
+    const mm = Math.floor(ms / 60000), ss = Math.floor((ms % 60000) / 1000);
+    $('scClock').textContent = `${PERIOD[c.period] || c.period} · ${c.period === 'PRE' ? '—' : `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`}${c.stoppageMin ? ` · +${c.stoppageMin}` : ''}${c.running ? '' : c.period === 'PRE' || c.period === 'FT' ? '' : ' · parado'}`;
+    document.querySelectorAll('.moms [data-ev]').forEach((b) => b.classList.toggle('next', b.dataset.ev === NEXT[c.period] && !b.classList.contains('armed')));
+    const opts = Array.from({ length: 16 }, (_, i) => i); // sem, +1 … +15
+    $('scStop').innerHTML = opts.map((n) => `<button data-st="${n}" class="${(c.stoppageMin || 0) === n ? 'on' : ''}">${n ? '+' + n : 'sem'}</button>`).join('');
+    $('stopToggle').textContent = `Acréscimos: ${c.stoppageMin ? '+' + c.stoppageMin + ' min' : 'sem'}`;
+    $('scStop').querySelectorAll('[data-st]').forEach((b) => (b.onclick = () => {
+      send({ type: 'clock', op: { action: 'stoppage', minutes: Number(b.dataset.st) } });
+      say($('scMsg'), Number(b.dataset.st) ? `✔ acréscimos +${b.dataset.st}` : '✔ sem acréscimos', true);
+      $('stopBox').classList.add('hidden'); // escolheu: fecha sozinho
+      if (navigator.vibrate) navigator.vibrate(40);
+    }));
+  }
+  setInterval(() => { if (tab === 'sc') paintSc(); }, 1000);
+  $('stopToggle').onclick = () => { $('stopBox').classList.toggle('hidden'); paintSc(); };
+  const fire = async (ev, okMsg) => {
+    const r = await api('/api/match/event', ev);
+    say($('scMsg'), r.ok ? okMsg : (r.error || 'não deu certo'), r.ok);
+    if (navigator.vibrate) navigator.vibrate(r.ok ? 60 : [200, 80, 200]);
+    loadState();
+  };
+  /* ── jogadores do time: os da escalação do jogo (titulares + reservas, com foto); senão o elenco inteiro ── */
+  let rosters = null;
+  const nrm = (x) => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  async function playersOf(side) {
+    // a escalação salva DESTE time (procura pelo time, não pelo lado — casa/visitante podem estar trocados)
+    const team = st?.teams?.[side] || {};
+    const same = (x) => x && ((team.slug && x.teamSlug === team.slug) || (nrm(x.teamName) && nrm(x.teamName) === nrm(team.name)));
+    const ls = [st?.lineupStore?.home, st?.lineupStore?.away, st?.lineupBoard].find(same);
+    if (!rosters) { const r = await api('/api/rosters'); rosters = r.ok ? r.teams : []; }
+    const tn = nrm(team.name);
+    const t = rosters.find((x) => (team.slug && x.slug === team.slug) || nrm(x.name) === tn || nrm(x.slug) === tn) || rosters.find((x) => tn && (nrm(x.name).includes(tn) || tn.includes(nrm(x.name))));
+    // nome completo junto (pra busca achar pelo nome OU pelo apelido)
+    const elenco = (t?.players || []).map((p) => ({ number: p.number, name: p.short || p.name, full: `${p.name} ${p.apelido || ''} ${p.sobrenome || ''}`, photo: p.photo }));
+    if (ls && (ls.starters?.length || ls.reserves?.length)) {
+      const na = new Set([...(ls.starters || []), ...(ls.reserves || [])].map((p) => nrm(p.name)));
+      // quem é do elenco mas NÃO entrou na escalação também aparece (jogador que chegou, apelido diferente…)
+      const extra = elenco.filter((p) => !na.has(nrm(p.name)) && !na.has(nrm(p.full)));
+      return { starters: ls.starters || [], reserves: ls.reserves || [], extra };
+    }
+    return { starters: elenco, reserves: [], extra: [] };
+  }
+  /** cor de texto legível em cima da cor do time */
+  const ink = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return '#fff'; const n = parseInt(m[1], 16); const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; return l > 0.6 ? '#111' : '#fff'; };
+  function paintGoalBtns() {
+    if (!st) return;
+    for (const [side, id] of [['home', 'scHomeGoal'], ['away', 'scAwayGoal']]) {
+      const c = st.teams[side].color || '#33e02a';
+      Object.assign($(id).style, { background: c, color: ink(c), borderColor: c });
+    }
+  }
+  /** escolher um jogador (grade com foto): resolve com o jogador ou null */
+  function pickPlayer(title, sub, side, list, sections) {
+    return new Promise((resolve) => {
+      const c = st?.teams?.[side]?.color || '#33e02a';
+      $('pickSheet').style.setProperty('--tc', c);
+      $('pickTitle').textContent = title;
+      $('pickSub').textContent = sub || '';
+      // foto com o ROSTO no centro (/rostos/…; o servidor cai na original se faltar)
+      const face = (u) => u.replace(/^\/?(players|coaches)\//, '/rostos/$1/');
+      const card = (p, i) => `<button class="pl" data-i="${i}" data-q="${nrm((p.name || '') + ' ' + (p.full || '') + ' ' + (p.number ?? ''))}|${p.number ?? ''}"><span class="ph" style="${p.photo ? `background-image:url('${face(p.photo)}')` : ''}">${p.photo ? '' : (p.number ?? '?')}</span><span class="nm">${p.name || '—'}</span><span class="num">${p.number != null ? 'nº ' + p.number : ''}</span></button>`;
+      let html = '', i = 0;
+      for (const [label, arr] of sections || [['', list]]) {
+        if (!arr.length) continue;
+        if (label) html += `<div class="sec">${label}</div>`;
+        for (const p of arr) html += card(p, i++);
+      }
+      const flat = (sections || [['', list]]).flatMap(([, a]) => a);
+      $('pickGrid').innerHTML = html || '<div class="hint" style="grid-column:1/-1">sem jogadores cadastrados pra esse time — monte a escalação (aba Escalação ⚙)</div>';
+      $('pickSheet').classList.add('on');
+      // busca: nome, apelido ou número (número exato vem primeiro)
+      $('pickBusca').value = '';
+      $('pickBusca').oninput = () => {
+        const q = nrm($('pickBusca').value);
+        $('pickGrid').querySelectorAll('[data-i]').forEach((b) => { const [txt, num] = b.dataset.q.split('|'); b.style.display = !q || txt.includes(q) || num === q ? '' : 'none'; });
+        $('pickGrid').querySelectorAll('.sec').forEach((s) => { s.style.display = q ? 'none' : ''; });
+      };
+      const done = (v) => { $('pickSheet').classList.remove('on'); resolve(v); };
+      $('pickGrid').querySelectorAll('[data-i]').forEach((b) => (b.onclick = () => { b.classList.add('sel'); setTimeout(() => done(flat[Number(b.dataset.i)]), 150); }));
+      $('pickSkip').onclick = () => done(null);
+    });
+  }
+  /** GOL: animação da bola → "quem fez?" → o nome vai pro registro e pra animação do autor (entra depois do replay) */
+  async function goalFlow(side) {
+    const name = short(st?.teams?.[side] ?? {});
+    const r = await api('/api/match/event', { kind: 'goal', team: side });
+    if (!r.ok) { say($('scMsg'), r.error || 'não deu certo', false); return; }
+    if (navigator.vibrate) navigator.vibrate([80, 40, 80, 40, 200]);
+    const c = st?.teams?.[side]?.color || '#33e02a';
+    $('goalBg').style.background = `radial-gradient(circle, ${c}, #050a07 75%)`;
+    $('goalTeam').textContent = name;
+    $('goalAnim').classList.add('on');
+    loadState();
+    await new Promise((res) => setTimeout(res, 1500));
+    $('goalAnim').classList.remove('on');
+    const pl = await playersOf(side);
+    const p = await pickPlayer(`⚽ Quem fez o gol do ${name}?`, 'o nome entra na animação do autor (logo depois do replay) e na lista de gols', side, null, [['TITULARES', pl.starters], ['RESERVAS', pl.reserves], ['ELENCO (fora da escalação)', pl.extra || []]]);
+    if (!p) { say($('scMsg'), '✔ gol marcado — dá pra dizer o autor depois no painel (cartão Autor do gol)', true); return; }
+    // o gol que acabou de entrar na fila do autor (o último desse time)
+    const a = await api('/api/artilheiro');
+    const item = (a.pending || []).filter((x) => x.team === side).pop();
+    if (!item) { say($('scMsg'), `✔ gol de ${p.name} (a animação do autor está desligada no painel)`, true); return; }
+    const u = await api(`/api/artilheiro/${item.id}`, { player: p.name, number: p.number });
+    say($('scMsg'), u.ok ? `✔ gol de ${p.number ? p.number + ' ' : ''}${p.name}` : (u.error || 'não deu certo'), u.ok);
+  }
+  $('scHomeGoal').onclick = () => goalFlow('home');
+  $('scAwayGoal').onclick = () => goalFlow('away');
+  $('scHomeMinus').onclick = () => fire({ kind: 'goal_cancel', team: 'home' }, '✔ gol tirado (anulado)');
+  $('scAwayMinus').onclick = () => fire({ kind: 'goal_cancel', team: 'away' }, '✔ gol tirado (anulado)');
+  // momentos: 1º toque arma (amarelo), 2º toque em até 3 s confirma
+  const MOM_TXT = { kickoff: '✔ jogo começou', halftime: '✔ fim do 1º tempo', second_half: '✔ 2º tempo começou', fulltime: '✔ fim de jogo' };
+
+  /* ── telas no ar ── */
+  let telaOn = '';
+  async function loadCena() {
+    const r = await api('/api/cena');
+    if (!r.ok) return;
+    telaOn = r.on;
+    document.querySelectorAll('.telas [data-tela]').forEach((b) => { if (!b.classList.contains('armed')) b.classList.toggle('on', b.dataset.tela === r.on); });
+    const o = document.querySelector('.telas [data-tela="outra"]');
+    o.style.display = r.on === 'outra' ? '' : 'none';
+    // sem a "outra cena", o patrocínio ocupa a linha toda
+
+    if (r.on === 'outra') $('telaOutra').textContent = r.program;
+    // principal acesa também quando é o apresentador (é a mesma cena)
+    document.querySelector('.telas [data-tela="principal"]').classList.toggle('on', r.on === 'principal' || r.on === 'apresentador');
+    const sel = $('apresIn');
+    if (document.activeElement !== sel) {
+      const ins = r.inputs?.length ? r.inputs : [1, 2, 3, 4].map((id) => ({ id, name: `Entrada ${id}` }));
+      sel.innerHTML = '<option value="">— escolha —</option>' + ins.map((i) => `<option value="${i.id}"${i.id === r.apresInput ? ' selected' : ''}>${i.name} (entrada ${i.id})</option>`).join('');
+    }
+  }
+  $('apresIn').onchange = async (e) => { const r = await api('/api/cena/apresentador/cfg', { input: Number(e.target.value) }); say($('tlMsg'), r.ok ? `✔ apresentador = entrada ${r.input} da ATEM` : r.error, r.ok); };
+  setInterval(() => { if (tab === 'tl') loadCena(); }, 2000);
+  const TELA_GO = {
+    inicio: () => api('/api/telas/air', { tela: 'inicio' }),
+    intervalo: () => api('/api/telas/air', { tela: 'intervalo' }),
+    patrocinio: () => api('/api/patrocinio/on', {}),
+    principal: () => api('/api/cena/principal', {}),
+    apresentador: () => api('/api/cena/apresentador', {}),
+  };
+  const TELA_TXT = { inicio: '✔ Começaremos em instantes no ar (microfone mudo)', intervalo: '✔ Intervalo no ar (microfone mudo)', patrocinio: '✔ patrocínio no ar', principal: '✔ cena principal no ar', apresentador: '✔ câmera do apresentador no ar' };
+  document.querySelectorAll('.telas [data-tela]').forEach((b) => {
+    if (b.dataset.tela === 'outra') return;
+    const label = b.innerHTML;
+    b.onclick = async () => {
+      const k = b.dataset.tela;
+      // a cena principal vai com 1 toque (é a volta pro jogo); as outras pedem confirmação
+      if (k !== 'principal' && k !== 'apresentador' && !b.classList.contains('armed')) {
+        document.querySelectorAll('.telas .armed').forEach((x) => { x.classList.remove('armed'); x.innerHTML = x.dataset.label; });
+        b.dataset.label = label;
+        b.classList.add('armed');
+        b.textContent = 'toque de novo';
+        clearTimeout(b._t);
+        b._t = setTimeout(() => { b.classList.remove('armed'); b.innerHTML = label; loadCena(); }, 3000);
+        return;
+      }
+      clearTimeout(b._t);
+      b.classList.remove('armed');
+      b.innerHTML = label;
+      const r = await TELA_GO[k]();
+      say($('tlMsg'), r.ok ? TELA_TXT[k] : (r.error || 'não deu certo'), r.ok);
+      if (navigator.vibrate) navigator.vibrate(r.ok ? 60 : [200, 80, 200]);
+      setTimeout(loadCena, 600);
+    };
+  });
+  document.querySelectorAll('.moms [data-ev]').forEach((b) => {
+    const label = b.textContent;
+    b.onclick = () => {
+      if (!b.classList.contains('armed')) {
+        document.querySelectorAll('.moms .armed').forEach((x) => { x.classList.remove('armed'); x.textContent = x.dataset.label; });
+        b.dataset.label = label;
+        b.classList.add('armed');
+        b.textContent = 'toque de novo';
+        clearTimeout(b._t);
+        b._t = setTimeout(() => { b.classList.remove('armed'); b.textContent = label; paintSc(); }, 3000);
+        return;
+      }
+      clearTimeout(b._t);
+      b.classList.remove('armed');
+      b.textContent = label;
+      fire({ kind: b.dataset.ev }, MOM_TXT[b.dataset.ev]);
+    };
+  });
+
+  /* ── REPLAY pelo celular: estado do botão (anima entre uma consulta e outra) ── */
+  const ARC = 2 * Math.PI * 48;
+  const rv = { mode: 'idle', id: '', airAt: 0, total: 0, airUntil: 0, msg: '', msgUntil: 0, seenAired: '', tail: 12 };
+  function flash(clean, airSec) {
+    const f = $('repFlash');
+    f.classList.toggle('dirty', !clean);
+    f.innerHTML = clean
+      ? `<b>✔ REPLAY GRAVADO</b><span>${airSec ? `vai pro ar em ${airSec} s` : 'o diretor põe no ar'}</span>`
+      : `<b>⚠ REPLAY GRAVADO COM PLACAR</b><span>a câmera limpa não estava gravando — avise o diretor</span>`;
+    f.style.display = 'flex';
+    clearTimeout(flash.t);
+    flash.t = setTimeout(() => (f.style.display = 'none'), clean ? 1300 : 2600);
+    if (navigator.vibrate) navigator.vibrate(clean ? [80, 60, 160] : [300, 100, 300]);
+  }
+  function paintRepBtn() {
+    const b = $('btnRep'), big = $('repBig'), sub = $('repSub'), arc = $('repArc');
+    const now = performance.now();
+    let mode = rv.mode;
+    if (mode === 'air' && now > rv.airUntil) mode = rv.mode = 'idle';
+    if (rv.msg && now > rv.msgUntil) rv.msg = '';
+    b.className = 'repBtn' + (mode === 'idle' ? '' : ' ' + mode);
+    if (mode === 'saving') { big.textContent = 'GRAVANDO…'; sub.textContent = 'segure o celular'; arc.style.strokeDashoffset = ''; }
+    else if (mode === 'wait') {
+      const left = Math.max(0, rv.airAt - now);
+      big.textContent = String(Math.ceil(left / 1000));
+      sub.textContent = rv.holding ? 'SOLTE = cancela' : 'toque: NO AR JÁ · segure: cancela';
+      arc.style.strokeDashoffset = rv.holding
+        ? String(ARC * (1 - Math.min(1, (now - rv.holdAt) / HOLD_MS)))
+        : String(ARC * (1 - (rv.total > 0 ? left / (rv.total * 1000) : 0)));
+      if (rv.holding) big.textContent = '✕';
+    } else if (mode === 'air') { big.textContent = '● NO AR'; sub.textContent = 'o replay está passando'; arc.style.strokeDashoffset = '0'; }
+    else { big.textContent = rv.msg || 'REPLAY'; sub.textContent = `salva os últimos ${rv.tail} s`; arc.style.strokeDashoffset = ''; }
+    requestAnimationFrame(paintRepBtn);
+  }
+  requestAnimationFrame(paintRepBtn);
+
+  /* ── REPLAY pelo celular ── */
+  const STATE_TXT = { 'no ar': '✔ foi pro ar', cancelado: 'cancelado', pulado: 'não entrou', salvo: 'salvo', erro: 'erro', aguardando: 'esperando' };
+  let repTimer = null;
+  async function pollRep() {
+    clearTimeout(repTimer);
+    const r = await api('/api/replay/phone');
+    if (r.ok) {
+      const p = r.pending;
+      rv.tail = r.tailSec;
+      $('repActs').classList.toggle('hidden', !p);
+      $('repState').className = 'repState' + (p ? ' wait' : '');
+      $('repState').textContent = p ? `✔ replay gravado${p.by ? ' por ' + p.by : ''}` : r.saving ? 'salvando…' : '';
+      // contagem: acerta o relógio local com o do PC (só se mudou mais de meio segundo)
+      if (p && p.inMs != null) {
+        const at = performance.now() + p.inMs;
+        if (rv.mode !== 'wait' || rv.id !== p.id || Math.abs(at - rv.airAt) > 500) { rv.airAt = at; rv.id = p.id; rv.total = r.airSec; }
+        rv.mode = 'wait';
+      } else if (r.saving) rv.mode = 'saving';
+      else if (rv.mode === 'wait' || rv.mode === 'saving') {
+        const h = r.history[0];
+        if (h && h.state === 'no ar' && h.airedAgoMs != null && h.airedAgoMs < (r.tailSec + 4) * 1000) {
+          rv.mode = 'air';
+          rv.airUntil = performance.now() + (r.tailSec + 4) * 1000 - h.airedAgoMs;
+        } else {
+          rv.mode = 'idle';
+          if (h && (h.state === 'pulado' || h.state === 'cancelado' || h.state === 'erro')) { rv.msg = h.state === 'cancelado' ? 'CANCELADO' : 'NÃO ENTROU'; rv.msgUntil = performance.now() + 3000; say($('repMsg'), h.note, false); }
+        }
+      }
+      const h0 = r.pending ?? r.history[0];
+      $('repWarn').classList.toggle('hidden', !(h0 && h0.clean === false && Date.now() - h0.savedAt < 120_000));
+      $('repWarn').textContent = '⚠ o último replay saiu COM PLACAR: a câmera limpa não estava gravando. Avise o diretor (painel → câmeras gravando).';
+      fillSel($('repTail'), [6, 8, 10, 12, 15, 20, 25, 30], r.tailSec, (v) => `${v} segundos`);
+      fillSel($('repAir'), [0, 5, 10, 15, 20, 25, 30, 45, 60], r.airSec, (v) => (v ? `${v} s depois` : 'não — só salva (o diretor põe)'));
+      $('repHint').textContent = r.airSec > 0
+        ? `Toque = grava. Ele entra no ar sozinho em ${r.airSec} s — na contagem: toque de novo = vai JÁ · segure = cancela.`
+        : 'O replay fica salvo — o diretor põe no ar pelo painel.';
+      // cada replay da lista tem ▶ NO AR: não deu tempo na hora (escanteio rápido…) → põe depois
+      const hk = r.history.map((h) => h.id + h.state).join(',');
+      if ($('repHist').dataset.k !== hk) {
+        $('repHist').dataset.k = hk;
+        $('repHist').innerHTML = r.history.length
+          ? r.history.map((h) => `<div class="repItem"><img class="repTh" src="${h.thumb}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span>${new Date(h.savedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} · ${h.by || '—'} · <b>${STATE_TXT[h.state] || h.state}</b>${h.note ? ` <span style="opacity:.8">(${h.note})</span>` : ''}</span><button data-rep="${h.id}" data-ic="play">NO AR</button></div>`).join('')
+          : 'nenhum ainda';
+        $('repHist').querySelectorAll('[data-rep]').forEach((b) => (b.onclick = async () => {
+          b.disabled = true;
+          const x = await api(`/api/replay/phone/air/${b.dataset.rep}`, {});
+          say($('repMsg'), x.ok ? '✔ replay no ar' : x.error, x.ok);
+          b.disabled = false;
+          pollRep();
+        }));
+      }
+    }
+    if (tab === 'rep') repTimer = setTimeout(pollRep, 1000);
+  }
+  let repCfgOpen = false;
+  $('repGear').onclick = () => {
+    repCfgOpen = !repCfgOpen;
+    $('repCfg').classList.toggle('hidden', !repCfgOpen);
+    $('repGear').classList.toggle('on', repCfgOpen);
+  };
+  const fillSel = (el, values, cur, fmt) => {
+    if (document.activeElement === el) return; // não mexe enquanto a pessoa escolhe
+    const vals = values.includes(cur) ? values : [...values, cur].sort((a, b) => a - b);
+    el.innerHTML = vals.map((v) => `<option value="${v}"${v === cur ? ' selected' : ''}>${fmt(v)}</option>`).join('');
+  };
+  $('repTail').onchange = async (e) => { const r = await api('/api/replay/tail', { seconds: Number(e.target.value) }); say($('repMsg'), r.ok ? '✔ duração salva' : r.error, r.ok); pollRep(); };
+  $('repAir').onchange = async (e) => { const r = await api('/api/replay/phone/cfg', { airSec: Number(e.target.value) }); say($('repMsg'), r.ok ? '✔ salvo' : r.error, r.ok); pollRep(); };
+
+  /* BOTÃO ÚNICO: toque = grava · na contagem: toque = vai pro ar JÁ · segure 1 s = cancela */
+  const HOLD_MS = 900;
+  let holdT = null;
+  const repBtn = $('btnRep');
+  repBtn.addEventListener('pointerdown', () => {
+    if (rv.mode !== 'wait') return;
+    rv.holding = true; rv.holdAt = performance.now();
+    holdT = setTimeout(async () => {
+      holdT = null; rv.holding = false; rv.skipClick = true;
+      if (navigator.vibrate) navigator.vibrate([60, 60, 60]);
+      await api('/api/replay/phone/cancel', {});
+      rv.mode = 'idle'; rv.msg = 'CANCELADO'; rv.msgUntil = performance.now() + 2500;
+      say($('repMsg'), 'cancelado — não vai pro ar (fica nos Últimos replays)', true);
+      pollRep();
+    }, HOLD_MS);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => repBtn.addEventListener(ev, () => { if (holdT) { clearTimeout(holdT); holdT = null; } rv.holding = false; }));
+  let repBusy = false;
+  $('btnRep').onclick = async () => {
+    if (rv.skipClick) { rv.skipClick = false; return; } // foi o "segurar pra cancelar"
+    if (rv.mode === 'wait') {
+      // na contagem: toque = vai pro ar AGORA
+      if (navigator.vibrate) navigator.vibrate(80);
+      const r = await api('/api/replay/phone/now', {});
+      say($('repMsg'), r.ok ? '✔ replay no ar' : r.error, r.ok);
+      pollRep();
+      return;
+    }
+    if (repBusy) return;
+    repBusy = true;
+    rv.mode = 'saving';
+    if (navigator.vibrate) navigator.vibrate(60);
+    const r = await api('/api/replay/phone', { by: me?.name || '' });
+    repBusy = false;
+    if (r.ok) {
+      flash(r.clean !== false, r.airSec);
+      if (r.airSec) { rv.mode = 'wait'; rv.id = r.id; rv.total = r.airSec; rv.airAt = performance.now() + r.airSec * 1000; }
+      else { rv.mode = 'idle'; rv.msg = '✔ SALVO'; rv.msgUntil = performance.now() + 2500; }
+    } else {
+      rv.mode = 'idle'; rv.msg = 'NÃO SALVOU'; rv.msgUntil = performance.now() + 3000;
+      say($('repMsg'), r.error, false);
+      if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+    }
+    pollRep();
+  };
+  showTab(tab);
+  aplicaMenus(); // a aba salva pode ter sido escondida no ⚙ menus
+
+  $('btnLance').onclick = async () => {
+    const r = await api('/api/lances/mark', { label: `⚑ ${me.name}` });
+    say($('lanceMsg'), r.ok ? '✔ lance marcado — o replay é salvo sozinho' : r.error, r.ok);
+    if (navigator.vibrate) navigator.vibrate(60);
+  };
+
+  /* ── intercom (intercom.js) ── */
+  function send(m) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(m)); }
+  const ic = Intercom({
+    send,
+    name: () => me?.name ?? 'Operador',
+    posto: () => me?.posto,
+    onMsg: (t) => say($('icMsg'), t),
+    openMic: () => $('openMic').checked,
+    onTalk: () => paintTalk(),
+    onPeers: (list, myId) => { peersNow = list; meId = myId; paintPeers(); },
+  });
+  let peersNow = [];
+  let meId = null;
+  function paintPeers() {
+    const others = peersNow.filter((p) => p.id !== meId);
+    $('peers').innerHTML = peersNow.map((p) => {
+      const priv = p.talking && p.to;
+      const forMe = priv && p.to === meId;
+      return `<span class="peer${p.talking ? (forMe ? ' private' : ' talking') : ''}${p.id === meId ? ' me' : ''}">${p.talking ? '🎙 ' : ''}${p.name}${forMe ? ' (só pra você)' : priv ? ' (particular)' : ''}</span>`;
+    }).join('');
+    // botões de falar com cada um (no cartão e na barra de baixo)
+    const key = others.map((p) => p.id + p.name).join('|');
+    if (key !== paintPeers.key) {
+      paintPeers.key = key;
+      $('privs').innerHTML = others.length ? others.map((p) => `<button class="priv" data-to="${p.id}">🎙 ${p.name}</button>`).join('') : '<span class="hint">ninguém mais no intercom ainda</span>';
+      $('pttBar').innerHTML = `<button class="all" data-to="">🎙 TODOS</button>` + others.map((p) => `<button class="priv" data-to="${p.id}">${p.name}</button>`).join('');
+      document.querySelectorAll('#privs [data-to], #pttBar [data-to]').forEach((b) => holdToTalk(b, b.dataset.to || null));
+    }
+    // quem está falando comigo fica marcado
+    document.querySelectorAll('[data-to]').forEach((b) => {
+      const p = peersNow.find((x) => x.id === b.dataset.to);
+      b.classList.toggle('hearing', !!(p && p.talking && (!p.to || p.to === meId)));
+    });
+    paintTalk();
+  }
+  function paintTalk() {
+    const all = ic.talking && !ic.talkTo;
+    $('ptt').classList.toggle('talking', all);
+    $('ptt').textContent = all ? 'Falando com todos…' : 'Segure para falar';
+    document.querySelectorAll('[data-to]').forEach((b) => {
+      const to = b.dataset.to || null;
+      b.classList.toggle('talking', ic.talking && (to ? ic.talkTo === to : !ic.talkTo));
+    });
+    $('pttBar').classList.toggle('hidden', !ic.joined);
+    document.body.classList.toggle('hasBar', ic.joined);
+  }
+  /** segure pra falar: com todos (to = null) ou só com uma pessoa */
+  function holdToTalk(el, to) {
+    el.addEventListener('pointerdown', (e) => { e.preventDefault(); try { el.setPointerCapture?.(e.pointerId); } catch { /* */ } ic.talk(true, to); paintTalk(); if (navigator.vibrate) navigator.vibrate(30); });
+    const up = () => {
+      if (!ic.talking) return;
+      // soltou: com "microfone aberto" volta a falar com todos; senão fecha
+      if ($('openMic').checked) ic.talk(true); else ic.talk(false);
+      paintTalk();
+    };
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => el.addEventListener(ev, up));
+    el.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+  $('btnJoin').onclick = async () => {
+    try { await ic.join(); } catch (e) { return say($('icMsg'), 'microfone não liberado: ' + (e.message || e)); }
+    paintTalk();
+    paintPeers.key = '';
+    paintPeers();
+    $('btnJoin').classList.add('hidden');
+    $('icOn').classList.remove('hidden');
+    try { await navigator.wakeLock?.request('screen'); } catch { /* tela pode apagar */ }
+  };
+  $('btnLeave').onclick = () => {
+    ic.leave();
+    paintTalk();
+    $('btnJoin').classList.remove('hidden');
+    $('icOn').classList.add('hidden');
+  };
+  holdToTalk($('ptt'), null);
+  $('openMic').onchange = (e) => { ic.talk(e.target.checked); paintTalk(); };
+  $('vol').oninput = (e) => ic.setVolume(+e.target.value);
+
+  /* ── ⚙ do intercom: microfone e saída ── */
+  let meterT = null;
+  async function fillIcDevices() {
+    const d = await ic.devices();
+    const opt = (list, cur, def) => [`<option value="">${def}</option>`, ...list.map((x) => `<option value="${x.id}"${x.id === cur ? ' selected' : ''}>${x.label}</option>`)].join('');
+    $('icMic').innerHTML = opt(d.mics.filter((x) => x.id !== 'default' && x.id !== 'communications'), d.mic, 'padrão do celular');
+    const outs = d.outs.filter((x) => x.id !== 'default' && x.id !== 'communications');
+    $('icOut').innerHTML = opt(outs, d.out, 'padrão do celular');
+    $('icOut').disabled = !d.canOut;
+    const noNames = d.mics.length && d.mics.every((x) => /^Microfone \d+$/.test(x.label));
+    $('icCfgHint').innerHTML = [
+      noNames ? 'Entre no intercom pra aparecerem os nomes dos microfones.' : '',
+      !d.canOut ? 'Neste celular quem escolhe a saída é o próprio sistema: conecte o fone (com fio ou Bluetooth) e o som vai pra ele.' : !outs.length ? 'O celular só mostra a saída padrão — conectando um fone ele aparece aqui.' : '',
+    ].filter(Boolean).join('<br>');
+  }
+  $('icGear').onclick = async () => {
+    const open = $('icCfg').classList.toggle('hidden') === false;
+    $('icGear').classList.toggle('on', open);
+    clearInterval(meterT);
+    if (!open) return;
+    await fillIcDevices();
+    meterT = setInterval(() => { $('icMeter').style.width = `${Math.round(ic.level() * 100)}%`; }, 80);
+  };
+  $('icMic').onchange = async (e) => {
+    try { await ic.setMic(e.target.value); say($('icMsg'), '✔ microfone trocado', true); } catch (er) { say($('icMsg'), 'não consegui usar esse microfone: ' + (er.message || er)); }
+  };
+  $('icOut').onchange = async (e) => {
+    const ok = await ic.setOutput(e.target.value);
+    say($('icMsg'), ok ? '✔ saída trocada' : 'este celular não deixa escolher a saída', ok);
+  };
+  $('icTest').onclick = () => ic.testOutput();
+  navigator.mediaDevices?.addEventListener?.('devicechange', () => { if (!$('icCfg').classList.contains('hidden')) fillIcDevices(); });
+
+  /* ── conexão (o mesmo WebSocket do sistema) ── */
+  function connect() {
+    ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
+    ws.onopen = () => { $('dot').classList.add('on'); ic.reconnected(); };
+    ws.onclose = () => { $('dot').classList.remove('on'); setTimeout(connect, 1500); };
+    ws.onmessage = (ev) => {
+      let m; try { m = JSON.parse(ev.data); } catch { return; }
+      if (m.type === 'atem') { atem = m.status; paintTally(); }
+      else if (m.type === 'state:snapshot' && m.state) { st = m.state; if (tab === 'sc') paintSc(); if (tab === 'esc') paintEsc(); if (tab === 'sub') paintSub(); if (tab === 'cq') paintCq(); }
+      else if (m.type?.startsWith('ic:')) ic.handle(m);
+    };
+  }
+
+  api('/api/atem').then((r) => { if (r.ok) { atem = r; fillInputs(); paintTally(); } });
+  connect();
+  loadCfg();
+  window.__ic = ic; // diagnóstico
+
+  /* ══════════ DRONE ══════════ */
+  var dr = null; // último status (var: a aba pode abrir antes deste trecho carregar)
+  var drPoll = 0;
+  const fmtS = (x) => `${Math.floor(x / 60)}:${String(x % 60).padStart(2, '0')}`;
+  const HTXT = { ok: 'IMAGEM BOA', fraca: 'IMAGEM FRACA', sem: 'SEM IMAGEM' };
+  function paintDr(s) {
+    if (!s) return;
+    dr = s;
+    $('dHealth').className = `dHealth ${s.health}`;
+    $('dHealthT').textContent = HTXT[s.health] || '';
+    $('dHealthW').textContent = s.error && s.health !== 'ok' ? s.error : s.healthWhy;
+    $('dFps').textContent = s.fps || '–';
+    $('dMbps').textContent = s.kbps ? (s.kbps / 1000).toFixed(1) : '–';
+    $('dUrl').textContent = s.pushUrl;
+    const air = $('dAir');
+    air.classList.toggle('on', !!s.onAir);
+    air.textContent = s.onAir ? 'VOLTAR PRO JOGO' : 'TELA CHEIA';
+    $('dSplit').disabled = s.health === 'sem' && !s.split;
+    $('dSplit').classList.toggle('on', !!s.split);
+    $('dSplit').textContent = s.split ? 'VOLTAR PRO JOGO' : '◧ DIVIDIDA';
+    // imagem ruim: NÃO deixa pôr no ar (voltar sempre pode)
+    air.disabled = !s.onAir && s.health === 'sem';
+    $('dRec').classList.toggle('on', !!s.recording);
+    $('dRec').textContent = s.recording ? `PARAR · ${fmtS(s.recSec)}` : 'GRAVAR';
+    $('dOn').textContent = s.on ? (s.receiving ? '✔ RECEBENDO' : 'ESPERANDO O DRONE…') : 'LIGAR E CRIAR A CENA';
+    drawPip();
+  }
+  async function droneTick() { paintDr(await api('/api/drone')); }
+  function droneOpen() { droneTick(); clearInterval(drPoll); drPoll = setInterval(droneTick, 1000); }
+  function droneClose() { clearInterval(drPoll); drPoll = 0; pipOff(); }
+  $('dCopy').onclick = async () => {
+    try { await navigator.clipboard.writeText($('dUrl').textContent); say($('dMsg'), '✔ link copiado — cole no app do drone', true); }
+    catch { say($('dMsg'), 'segure o link pra copiar'); }
+  };
+  $('dOn').onclick = async () => { const r = await api('/api/drone/ligar', { url: $('dPull').value.trim() }); paintDr(r); say($('dMsg'), r.obs || r.error, !r.error); };
+  $('dOff').onclick = async () => { paintDr(await api('/api/drone/desligar', {})); };
+  async function toggleAir() {
+    const r = await api('/api/drone/ar', { on: !dr?.onAir });
+    paintDr(r);
+    if (!r.ok) say($('dMsg'), r.error); else say($('dMsg'), r.onAir ? '✔ drone NO AR' : '✔ voltou pro jogo', true);
+  }
+  async function toggleRec() {
+    const r = await api('/api/drone/gravar', { on: !dr?.recording });
+    paintDr(r);
+    if (!r.ok) say($('dMsg'), r.error);
+  }
+  $('dAir').onclick = toggleAir;
+  $('dSplit').onclick = async () => { const r = await api('/api/dividida', { fonte: 'drone' }); say($('dMsg'), r.ok ? (dr?.split ? '✔ voltou pro jogo' : '✔ tela dividida no ar') : r.error, r.ok); droneTick(); };
+  $('dRec').onclick = toggleRec;
+
+  /* ── BOTÃO FLUTUANTE: vídeo "picture-in-picture" desenhado aqui (fica por cima do app do drone).
+     Os botões da janelinha (⏯ e ⏭ do próprio celular) viram NO AR e GRAVAR. Só existe na aba Drone. ── */
+  var pv = $('dPip');
+  var cv = $('dCv');
+  var pipStream = null;
+  function drawPip() {
+    if (!pipStream) return;
+    const c = cv.getContext('2d');
+    const s = dr || {};
+    c.fillStyle = s.onAir ? '#c4231b' : '#101513';
+    c.fillRect(0, 0, 480, 270);
+    c.fillStyle = { ok: '#3be33b', fraca: '#ffb020', sem: '#ff453a' }[s.health] || '#ff453a';
+    c.beginPath(); c.arc(40, 42, 14, 0, 7); c.fill();
+    c.fillStyle = '#fff'; c.font = '600 26px Inter, sans-serif'; c.textBaseline = 'middle';
+    c.fillText(`DRONE · ${HTXT[s.health] || '…'}`, 66, 43);
+    c.font = '400 92px Anton, Impact, sans-serif'; c.textAlign = 'center';
+    c.fillText(s.onAir ? 'NO AR' : 'FORA DO AR', 240, 140);
+    c.font = '700 30px Inter, sans-serif';
+    c.fillStyle = s.recording ? '#ffb3ad' : '#fff';
+    c.fillText(s.recording ? `● GRAVANDO ${fmtS(s.recSec || 0)}  ·  ⏭ parar` : '⏯ NO AR   ·   ⏭ GRAVAR', 240, 228);
+    c.textAlign = 'start';
+  }
+  async function pipOn() {
+    if (!document.pictureInPictureEnabled || !pv.requestPictureInPicture) {
+      say($('dMsg'), 'este celular não abre janela flutuante pelo navegador — use os botões aqui');
+      return false;
+    }
+    if (!pipStream) { pipStream = cv.captureStream(4); pv.srcObject = pipStream; }
+    drawPip();
+    await pv.play().catch(() => {});
+    if ('mediaSession' in navigator) {
+      const ms = navigator.mediaSession;
+      try { ms.metadata = new MediaMetadata({ title: 'Drone — Copa Aranãs', artist: '⏯ no ar · ⏭ gravar' }); } catch { /* */ }
+      const keep = () => pv.play().catch(() => {});
+      try { ms.setActionHandler('play', () => { toggleAir(); keep(); }); } catch { /* */ }
+      try { ms.setActionHandler('pause', () => { toggleAir(); keep(); }); } catch { /* */ }
+      try { ms.setActionHandler('nexttrack', () => toggleRec()); } catch { /* */ }
+      try { ms.setActionHandler('previoustrack', () => toggleRec()); } catch { /* */ }
+    }
+    try { await pv.requestPictureInPicture(); return true; } catch (e) { say($('dMsg'), 'não consegui abrir a janelinha: ' + (e?.message || e)); return false; }
+  }
+  function pipOff() {
+    if (document.pictureInPictureElement === pv) document.exitPictureInPicture().catch(() => {});
+    if (pipStream) { pipStream.getTracks().forEach((t) => t.stop()); pipStream = null; pv.srcObject = null; }
+  }
+  $('dFloat').onclick = async () => { if (await pipOn()) say($('dMsg'), '✔ janelinha aberta — agora abra o app do drone', true); };
+  // saiu do app ESTANDO na aba Drone → tenta abrir a janelinha sozinho (alguns celulares deixam com o vídeo tocando)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && tab === 'dr' && pipStream && document.pictureInPictureElement !== pv) pv.requestPictureInPicture().catch(() => {});
+  });
+  // em segundo plano o navegador deixa os relógios lentos — com a janelinha aberta atualiza a cada 1 s mesmo assim
+  setInterval(() => { if (pipStream && document.hidden) droneTick(); }, 1000);
+
+  /* ══════════ MELHORES MOMENTOS (status deste jogo + pôr no ar só quando pronto) ══════════ */
+  var hlTimer = 0;
+  const hlFmt = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+  async function pollHl() {
+    clearTimeout(hlTimer);
+    const [l, m] = await Promise.all([api('/api/lances'), api('/api/melhores')]);
+    if (l.ok) {
+      $('hlJogo').textContent = l.jogo || '';
+      for (const w of ['1T', 'jogo']) {
+        const h = l.hl?.[w] || { status: 'idle' };
+        const row = $('hl' + w);
+        row.className = `hlRow ${h.status}`;
+        row.querySelector('.hlSt').textContent =
+          h.status === 'ready' ? `✔ PRONTO · ${hlFmt(h.seconds || 0)} · ${h.count || 0} lance${h.count === 1 ? '' : 's'}`
+          : h.status === 'building' ? `gerando… ${Math.round((h.progress || 0) * 100)}%`
+          : h.status === 'error' ? `⚠ ${h.error || 'não deu pra gerar'}`
+          : w === '1T' ? 'ainda não gerado — sai sozinho no intervalo' : 'ainda não gerado — sai sozinho no fim do jogo';
+        row.querySelector('.hlBar i').style.width = `${Math.round((h.progress || 0) * 100)}%`;
+        const b = row.querySelector('.hlAir');
+        b.disabled = h.status !== 'ready' || !!m?.onAir;
+        b.textContent = m?.onAir && m.which === w ? '● NO AR' : 'NO AR';
+      }
+    }
+    $('hlObs').textContent = m?.onAir ? '● melhores momentos NO AR — volta sozinho pro jogo no fim'
+      : m?.loaded ? `✔ ${m.loaded} carregado na cena do OBS — dá pra pôr no ar aqui ou só transicionar no OBS` : '';
+    if (tab === 'rep') hlTimer = setTimeout(pollHl, 2000);
+  }
+  for (const w of ['1T', 'jogo']) {
+    $('hl' + w).querySelector('.hlAir').onclick = async () => {
+      const r = await api('/api/melhores/air', { which: w });
+      say($('hlMsg'), r.ok ? '✔ melhores momentos no ar' : r.error, r.ok);
+      pollHl();
+    };
+  }
+
+  /* ══════════ CRAQUE DO JOGO ══════════ */
+  var cqTimer = 0;
+  function paintCq() {
+    if (!st) return;
+    const cq = st.craque || { on: false, phase: 'votacao', cands: [] };
+    $('cqShow').classList.toggle('on', !!cq.on);
+    $('cqShow').textContent = cq.on ? 'TIRAR DA TELA' : 'MOSTRAR CRAQUE DO JOGO';
+    for (const [side, id] of [['home', 'cqVoteHome'], ['away', 'cqVoteAway']]) {
+      const c = st.teams[side].color || '#33e02a';
+      $(id).textContent = `+ ${short(st.teams[side])}`;
+      Object.assign($(id).style, { background: c, color: ink(c), borderColor: c });
+      $(id).disabled = cq.phase === 'vencedor';
+    }
+    const list = [...(cq.cands || [])].sort((a, b) => b.votes - a.votes);
+    const max = list[0]?.votes || 0;
+    const solo = list.filter((x) => x.votes === max).length === 1;
+    const face = (u) => (u || '').replace(/^\/?(players|coaches)\//, '/rostos/$1/');
+    $('cqList').innerHTML = list.length ? list.map((c) => `
+      <div class="cqRow ${c.votes === max && solo ? 'lead' : ''}">
+        <span class="ph" style="${c.photo ? `background-image:url('${face(c.photo)}')` : ''}">${c.photo ? '' : (c.number ?? '?')}</span>
+        <span class="nm">${c.number != null ? c.number + ' ' : ''}${c.name}${cq.winnerId === c.id ? ' 🏆' : ''}</span>
+        <span class="vt">${c.votes}</span>
+        ${cq.phase === 'vencedor' ? '' : `<button data-menos="${c.id}">−1</button><button class="plus" data-mais="${c.id}">+1</button>`}
+      </div>`).join('') : '<div class="hint">ninguém votado ainda</div>';
+    $('cqList').querySelectorAll('[data-mais]').forEach((b) => (b.onclick = () => cqVoto({ id: b.dataset.mais, team: list.find((x) => x.id === b.dataset.mais)?.team, name: 'x' })));
+    $('cqList').querySelectorAll('[data-menos]').forEach((b) => (b.onclick = async () => { const r = await api('/api/craque/menos', { id: b.dataset.menos }); if (!r.ok) say($('cqMsg'), r.error); loadState().then(paintCq); }));
+    $('cqReveal').disabled = !list.length || cq.phase === 'vencedor';
+    $('cqReveal').textContent = cq.phase === 'vencedor' ? '🏆 CRAQUE REVELADO' : '🏆 REVELAR O CRAQUE';
+    if (cq.phase === 'vencedor') $('cqTie').classList.add('hidden');
+  }
+  async function cqVoto(body) {
+    const r = await api('/api/craque/voto', body);
+    if (!r.ok) say($('cqMsg'), r.error); else if (navigator.vibrate) navigator.vibrate(40);
+    await loadState();
+    paintCq();
+  }
+  async function cqPick(side) {
+    const pl = await playersOf(side);
+    const p = await pickPlayer(`🏆 Voto pro craque — ${short(st.teams[side])}`, 'quem o comentarista escolheu?', side, null, [['TITULARES', pl.starters], ['RESERVAS', pl.reserves], ['ELENCO (fora da escalação)', pl.extra || []]]);
+    if (p) cqVoto({ team: side, name: p.name, number: p.number, photo: p.photo });
+  }
+  $('cqVoteHome').onclick = () => cqPick('home');
+  $('cqVoteAway').onclick = () => cqPick('away');
+  $('cqShow').onclick = async () => { await api('/api/craque/mostrar', { on: !st?.craque?.on }); await loadState(); paintCq(); };
+  $('cqReveal').onclick = async () => {
+    const r = await api('/api/craque/revelar', {});
+    if (r.ok) { say($('cqMsg'), '🏆 craque revelado!', true); $('cqTie').classList.add('hidden'); }
+    else if (r.empate) {
+      $('cqTie').classList.remove('hidden');
+      $('cqTieBtns').innerHTML = r.empate.map((x) => `<button data-win="${x.id}">${x.name} (${x.votes})</button>`).join('');
+      $('cqTieBtns').querySelectorAll('[data-win]').forEach((b) => (b.onclick = async () => {
+        const x = await api('/api/craque/revelar', { id: b.dataset.win });
+        say($('cqMsg'), x.ok ? '🏆 craque revelado!' : x.error, x.ok);
+        $('cqTie').classList.add('hidden');
+        await loadState(); paintCq();
+      }));
+    } else say($('cqMsg'), r.error);
+    await loadState();
+    paintCq();
+  };
+  $('cqReset').onclick = async () => {
+    if ($('cqReset').dataset.armed !== '1') {
+      $('cqReset').dataset.armed = '1';
+      $('cqReset').textContent = 'toque de novo pra ZERAR os votos';
+      setTimeout(() => { $('cqReset').dataset.armed = ''; $('cqReset').textContent = 'zerar votação'; }, 3000);
+      return;
+    }
+    $('cqReset').dataset.armed = '';
+    $('cqReset').textContent = 'zerar votação';
+    await api('/api/craque/zerar', {});
+    await loadState();
+    paintCq();
+  };
+  function pollCq() { clearTimeout(cqTimer); loadState().then(paintCq); if (tab === 'cq') cqTimer = setTimeout(pollCq, 2000); }
+
+  /* ══════════ PATROCÍNIO: botão com a logo → tela do patrocínio (animação); de novo → volta pro jogo ══════════ */
+  var ptTimer = 0;
+  var ptData = null;
+  async function loadPt() {
+    const r = await api('/api/patrocinio');
+    if (!r || !r.arts) return;
+    ptData = r;
+    const box = $('ptGrid');
+    const key = r.arts.map((a) => `${a.i}|${a.arte || a.logo || ''}|${a.marca}`).join(',');
+    if (box.dataset.key !== key) {
+      box.dataset.key = key;
+      box.innerHTML = r.arts.length ? r.arts.map((a) => `
+        <button class="ptBtn ${a.tone === 'dark' ? 'claro' : ''}" data-art="${a.i}">
+          ${a.arte ? `<img class="art" src="${a.arte}" alt="">` : a.logo ? `<img src="${a.logo}" alt="">` : `<b>${a.marca}</b>`}
+          <span class="ptAir">● NO AR</span>
+        </button>`).join('')
+        : '<div class="hint">nenhuma arte de patrocínio — escolha a pasta das artes no painel do PC</div>';
+      box.querySelectorAll('[data-art]').forEach((b) => (b.onclick = () => ptToggle(Number(b.dataset.art))));
+    }
+    const on = !!r.active;
+    box.querySelectorAll('[data-art]').forEach((b) => b.classList.toggle('on', on && Number(b.dataset.art) === r.curArt));
+    const cur = on ? r.arts.find((a) => a.i === r.curArt) : null;
+    $('ptState').textContent = on ? `● NO AR: ${cur ? cur.marca : 'patrocínio'} — toque nela de novo pra voltar pro jogo` : 'toque numa logo pra pôr a tela do patrocínio no ar';
+    $('ptState').classList.toggle('on', on);
+  }
+  async function ptToggle(i) {
+    const on = ptData?.active && ptData.curArt === i;
+    $('ptState').textContent = on ? 'voltando pro jogo…' : 'entrando…';
+    const r = on ? await api('/api/patrocinio/off', {}) : await api('/api/patrocinio/on', { hold: true, art: i });
+    if (r && r.ok === false) say($('ptMsg'), r.error || 'não deu certo');
+    else if (navigator.vibrate) navigator.vibrate(40);
+    loadPt();
+  }
+  function pollPt() { clearTimeout(ptTimer); loadPt(); if (tab === 'pt') ptTimer = setTimeout(pollPt, 2000); }
+
+  /* ══════════ TABELA (grupos do iFut, ao vivo) + gols dos outros jogos ══════════ */
+  var tbTimer = 0;
+  var tbGrupo = '';
+  try { tbGrupo = localStorage.getItem('aranas.equipe.grupo') || ''; } catch { /* */ }
+  async function loadTb() {
+    const r = await api('/api/tabela');
+    if (!r.ok) { $('tbTable').innerHTML = `<div class="hint">${r.error || 'sem a tabela agora'}</div>`; return; }
+    const gs = r.groups || [];
+    if (!gs.some((g) => g.name === tbGrupo)) tbGrupo = gs[0]?.name || '';
+    $('tbGrupos').innerHTML = gs.length > 1 ? gs.map((g) => `<button data-g="${g.name}" class="${g.name === tbGrupo ? 'on' : ''}">${g.name.toUpperCase()}</button>`).join('') : '';
+    $('tbGrupos').querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => { tbGrupo = b.dataset.g; try { localStorage.setItem('aranas.equipe.grupo', tbGrupo); } catch { /* */ } loadTb(); }));
+    const g = gs.find((x) => x.name === tbGrupo) || gs[0] || { rows: r.table || [] };
+    $('tbTable').innerHTML = `<div class="tbRow tbHead"><span>#</span><span></span><span>TIME</span><span>P</span><span>J</span><span>V</span><span>SG</span></div>` +
+      g.rows.map((t, i) => `<div class="tbRow ${t.live ? 'live' : ''}"><span class="pos">${i + 1}</span><span class="lg">${t.logo ? `<img src="${t.logo}" alt="">` : ''}</span><span class="nm">${(t.short || t.name).toUpperCase()}${t.live ? ' <i>AO VIVO</i>' : ''}</span><b>${t.pts}</b><span>${t.j}</span><span>${t.v}</span><span>${t.sg > 0 ? '+' + t.sg : t.sg}</span></div>`).join('');
+    $('tbShow').textContent = `📺 MOSTRAR ${(g.name || 'A TABELA').toUpperCase()} NA TELA`;
+    $('tbAuto').checked = !!r.auto;
+    $('tbGols').checked = !!r.otherGoals;
+    // outros jogos de hoje: placar + gol (solta a animação no OBS)
+    const os = (r.others || []).filter((o) => !o.finished || true);
+    $('tbOutros').innerHTML = os.length ? os.map((o) => `
+      <div class="tbJogo">
+        <div class="tbPlac"><span>${o.home}</span><b>${o.homeScore} × ${o.awayScore}</b><span>${o.away}</span></div>
+        ${o.finished ? '<div class="hint" style="text-align:center;margin:4px 0 0">encerrado</div>' : `
+        <div class="row" style="margin-top:8px">
+          <button data-gol="${o.id}" data-s="home">⚽ GOL ${o.home}</button>
+          <button data-gol="${o.id}" data-s="away">⚽ GOL ${o.away}</button>
+        </div>
+        <div class="row tbMenos"><button data-menos="${o.id}" data-s="home">−1</button><span class="hint">corrigir</span><button data-menos="${o.id}" data-s="away">−1</button></div>`}
+      </div>`).join('') : '<div class="hint">nenhum outro jogo hoje</div>';
+    $('tbOutros').querySelectorAll('[data-gol]').forEach((b) => (b.onclick = async () => {
+      const x = await api('/api/tabela/score', { id: Number(b.dataset.gol), side: b.dataset.s, delta: 1 });
+      say($('tbMsg'), x.ok ? '⚽ gol marcado — a animação entra no OBS' : x.error, x.ok);
+      if (x.ok && navigator.vibrate) navigator.vibrate(60);
+      loadTb();
+    }));
+    $('tbOutros').querySelectorAll('[data-menos]').forEach((b) => (b.onclick = async () => {
+      const x = await api('/api/tabela/score', { id: Number(b.dataset.menos), side: b.dataset.s, delta: -1 });
+      say($('tbMsg'), x.ok ? '✔ placar corrigido' : x.error, x.ok);
+      loadTb();
+    }));
+  }
+  $('tbShow').onclick = async () => { const r = await api('/api/tabela/show', { grupo: tbGrupo }); say($('tbMsg'), r.ok ? `✔ ${r.grupo || 'tabela'} no ar` : r.error, r.ok); };
+  $('tbAuto').onchange = (e) => api('/api/tabela/cfg', { auto: e.target.checked });
+  $('tbGols').onchange = (e) => api('/api/tabela/cfg', { otherGoals: e.target.checked });
+  $('tbRefresh').onclick = async () => { say($('tbMsg'), 'atualizando do iFut…', true); await api('/api/tabela/refresh', {}); loadTb(); };
+  function pollTb() { clearTimeout(tbTimer); loadTb(); if (tab === 'tb') tbTimer = setTimeout(pollTb, 5000); }
+
+  /* ══════════ PRESENÇA: avisa o painel (aba Rede) quem está com o app — nome, celular, aba ══════════ */
+  var aparelho = '';
+  (async () => {
+    // modelo do celular (Chrome Android dá o modelo de verdade; senão pelo navegador)
+    try {
+      const h = await navigator.userAgentData?.getHighEntropyValues?.(['model', 'platformVersion']);
+      if (h?.model) aparelho = `${h.platform || 'Android'} · ${h.model}`;
+    } catch { /* */ }
+    if (!aparelho) {
+      const ua = navigator.userAgent;
+      aparelho = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : (/Android[^;]*;\s*([^;)]+)/.exec(ua)?.[1]?.trim() ?? (/Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'PC (Windows)' : 'navegador'));
+      if (aparelho === 'K') aparelho = 'Android';
+    }
+  })();
+  var aparelhoId = '';
+  try { aparelhoId = localStorage.getItem('aranas.equipe.aparelho') || ''; if (!aparelhoId) { aparelhoId = 'a' + Math.random().toString(36).slice(2, 10); localStorage.setItem('aranas.equipe.aparelho', aparelhoId); } } catch { aparelhoId = 'a' + Math.random().toString(36).slice(2, 10); }
+  function presenca() {
+    if (!me?.name || EMBED) return;
+    fetch('/api/rede/report', { method: 'POST', headers: { 'content-type': 'application/json' }, keepalive: true,
+      body: JSON.stringify({ who: aparelhoId, kind: 'app', name: me.name, device: aparelho, tab, visible: !document.hidden }) }).catch(() => {});
+  }
+  setInterval(presenca, 10_000);
+  setTimeout(presenca, 1500);
+  document.addEventListener('visibilitychange', presenca);
+
+  /* ══════════ TAKES DOS CINEGRAFISTAS (aquecimento, vestiário, detalhes) → NO AR ══════════ */
+  var tkAt = 0;
+  async function loadTakes() {
+    if (Date.now() - tkAt < 3_500) return;
+    tkAt = Date.now();
+    const r = await api('/api/cine/takes');
+    if (!r.ok) return;
+    const k = r.takes.map((t) => t.who + t.file).join('|') + '#' + (r.preparando || []).join(',') + '#' + (r.chegando || []).map((c) => c.file + c.pct + c.parado + c.mb + c.thumb).join('|') + '#' + (r.gravando || []).map((g) => g.who + Math.floor(g.secs / 5)).join('|');
+    if ($('tkList').dataset.k === k) return;
+    $('tkList').dataset.k = k;
+    const mm = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+    const grav = r.gravando || [];
+    const ch = (r.chegando || []).map((c, i) => {
+      const g = grav.find((x) => x.who === c.who);
+      const st = g ? `<b style="color:#ff4d4d">⏺ GRAVANDO</b> · ${mm(g.secs)}` : c.pct ? `⬆ chegando · ${c.pct}%` : `${c.mb} MB`;
+      return `<div class="tkItem"><img src="${c.thumb}" alt="" onerror="this.style.visibility='hidden'"><span><b>${c.who}</b><br>${st}${c.parado ? ' <i>(parado — celular sem Wi-Fi?)</i>' : ''}</span><button data-tkp="${i}" data-ic="play" title="os últimos 25 s">NO AR</button></div>`;
+    }).join('')
+      + grav.filter((g) => !(r.chegando || []).some((c) => c.who === g.who)).map((g) => `<div class="tkItem"><span>⏺ <b>${g.who}</b><br><b style="color:#ff4d4d">GRAVANDO</b> · ${mm(g.secs)}</span><button data-tkg="${g.who}" data-ic="play" title="os últimos 25 s">NO AR</button></div>`).join('')
+      + (r.preparando || []).map((w) => `<div class="tkItem"><span>✂ <b>${w}</b> — salvando o take…</span></div>`).join('');
+    $('tkList').innerHTML = ch + (r.takes.length ? r.takes.map((t, i) => `
+      <div class="tkItem">
+        <img src="${t.thumb}" alt="" loading="lazy">
+        <span><b>${t.who}</b><br>${new Date(t.at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${mm(t.dur)}${t.dur > 60 ? ' (vai 1 min)' : ''}</span>
+        <button data-tk="${i}" data-ic="play">NO AR</button>
+      </div>`).join('') : (ch ? '' : '<div class="hint">nenhum vídeo dos cinegrafistas ainda — grave pela câmera do celular (⏺ GRAVAR) que ele chega aqui sozinho</div>'));
+    $('tkList').querySelectorAll('[data-tkg]').forEach((b) => (b.onclick = async () => {
+      b.disabled = true;
+      say($('repMsg'), 'preparando os últimos segundos…', true);
+      const x = await api('/api/cine/takes/ar', { who: b.dataset.tkg, aoVivo: true });
+      say($('repMsg'), x.ok ? `✔ take de ${b.dataset.tkg} no ar` : x.error, x.ok);
+      setTimeout(() => { b.disabled = false; }, 3000);
+    }));
+    $('tkList').querySelectorAll('[data-tkp]').forEach((b) => (b.onclick = async () => {
+      const c = r.chegando[Number(b.dataset.tkp)];
+      b.disabled = true;
+      say($('repMsg'), 'preparando os últimos segundos…', true);
+      const x = await api('/api/cine/takes/ar', { who: c.who, file: c.file, parcial: true });
+      say($('repMsg'), x.ok ? `✔ take de ${c.who} no ar` : x.error, x.ok);
+      setTimeout(() => { b.disabled = false; }, 3000);
+    }));
+    $('tkList').querySelectorAll('[data-tk]').forEach((b) => (b.onclick = async () => {
+      const t = r.takes[Number(b.dataset.tk)];
+      b.disabled = true;
+      const x = await api('/api/cine/takes/ar', { who: t.who, file: t.file });
+      say($('repMsg'), x.ok ? `✔ take de ${t.who} no ar` : x.error, x.ok);
+      setTimeout(() => { b.disabled = false; }, 3000);
+    }));
+  }
+  setInterval(() => { if (tab === 'rep') loadTakes(); }, 4000);
+  $('tkEdit').onclick = () => { __demoIr(`/editor-cine?quem=${encodeURIComponent(me?.name || '')}&embed=1&voltar=1`); };
+})();
+</script>
+<!-- alerta grande: replay no ar, a câmera não entra -->
+<div id="lockAlert" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(120,0,0,.94);color:#fff;
+  flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;font-family:system-ui,sans-serif">
+  <div style="font-size:64px;line-height:1">⛔</div>
+  <div style="font-size:34px;font-weight:900;margin:14px 0 8px;letter-spacing:1px">REPLAY NO AR</div>
+  <div id="lockText" style="font-size:20px;max-width:420px;line-height:1.35">Sua câmera não entra agora. Espere voltar ao vivo e aperte de novo.</div>
+  <button onclick="document.getElementById('lockAlert').style.display='none'" style="margin-top:26px;font-size:22px;padding:16px 40px;border-radius:14px;border:0;background:#fff;color:#900;font-weight:900">ENTENDI</button>
+</div>
+<script>
+  function showLock(msg) {
+    const a = document.getElementById('lockAlert');
+    document.getElementById('lockText').textContent = String(msg || '').replace(/^⛔\s*REPLAY NO AR\s*—\s*/, '') || 'Sua câmera não entra agora.';
+    a.style.display = 'flex';
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+    clearTimeout(window.__lockT);
+    window.__lockT = setTimeout(() => (a.style.display = 'none'), 6000);
+  }
+
+/* ── 📲 APP NA TELA INICIAL: o ícone guarda o NOME FIXO do PC (copa-aranas.local) → abre em qualquer
+   Wi-Fi. O QR já chega aqui pelo nome fixo (página /entrar); aqui só oferece instalar, sem empurrar. ── */
+(() => {
+  const el = (id) => document.getElementById(id);
+  const FIXO = 'copa-aranas.local';
+  const NO = 'aranas.install.no';
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('me')) {
+    try { localStorage.setItem('aranas.equipe.me', decodeURIComponent(escape(atob(qs.get('me'))))); } catch { /* */ }
+    history.replaceState(null, '', location.pathname + (qs.get('instalar') ? '?instalar=1' : ''));
+    location.reload();
+    return;
+  }
+  if (standalone || qs.get('embed') === '1') return;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const byNumber = /^\d+\.\d+\.\d+\.\d+$/.test(location.hostname);
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferred = e; if (!el('installSheet').classList.contains('hidden')) open(); });
+  const how = () => ios
+    ? 'Toque em <b>Compartilhar</b> ⬆︎ e depois em <b>Adicionar à Tela de Início</b>.'
+    : 'Toque em <b>⋮</b> e depois em <b>Adicionar à tela inicial</b>.';
+  function show(html) { el('installHow').innerHTML = html; el('installSheet').classList.remove('hidden'); }
+  function open() {
+    if (deferred) {
+      show('Fica junto dos seus apps — da próxima vez é só tocar.<br><br><button id="bigInstall" class="primary">Instalar</button>');
+      el('bigInstall').onclick = async () => { deferred.prompt(); try { await deferred.userChoice; } catch { /* */ } deferred = null; el('installSheet').classList.add('hidden'); };
+      return;
+    }
+    if (byNumber) {
+      // endereço com número: o ícone não abriria em outro Wi-Fi → primeiro vai pro nome fixo
+      let me = '';
+      try { me = btoa(unescape(encodeURIComponent(localStorage.getItem('aranas.equipe.me') || ''))); } catch { /* */ }
+      const port = location.protocol === 'https:' ? location.port || '443' : '4443';
+      const url = `https://${FIXO}:${port}/movel?instalar=1${me ? '&me=' + encodeURIComponent(me) : ''}`;
+      show(`<a href="${url}" class="btnlink" style="background:var(--green);color:#052;border:0">Continuar</a><br><small>não abriu? <a href="#" id="installHere" style="color:#cfe6d8">instalar assim mesmo</a></small>`);
+      el('installHere').onclick = (e) => { e.preventDefault(); show(how()); };
+      return;
+    }
+    show(how());
+  }
+  el('btnInstall').onclick = open;
+  el('installOk').onclick = () => { el('installSheet').classList.add('hidden'); try { localStorage.setItem(NO, '1'); } catch { /* */ } };
+  el('installSheet').onclick = (e) => { if (e.target === el('installSheet')) el('installSheet').classList.add('hidden'); };
+  // depois de entrar (nome escolhido): mostra o "Instalar" no topo e, se veio do QR, oferece uma vez
+  let offered = false;
+  const t = setInterval(() => {
+    if (el('main').classList.contains('hidden')) return;
+    let no = false; try { no = localStorage.getItem(NO) === '1'; } catch { /* */ }
+    if (!offered && qs.get('instalar') && !no) { offered = true; setTimeout(open, 600); }
+    clearInterval(t);
+  }, 700);
+})();
+
+</script>
+</body>
+</html>
